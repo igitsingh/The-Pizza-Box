@@ -45,38 +45,52 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+
+  /* 🎄 FESTIVE CHRISTMAS THEME - Premium Red & Green */
+  --festive-red: #DC2626;
+  --festive-red-dark: #991B1B;
+  --festive-green: #16A34A;
+  --festive-green-dark: #15803D;
+  --festive-gold: #F59E0B;
+  --festive-cream: #FEF3C7;
+
+  --background: #FEF2F2;
+  /* Soft festive cream */
+  --foreground: #1F2937;
+  --card: #FFFFFF;
+  --card-foreground: #1F2937;
+  --popover: #FFFFFF;
+  --popover-foreground: #1F2937;
+  --primary: var(--festive-red);
+  /* Christmas Red */
+  --primary-foreground: #FFFFFF;
+  --secondary: var(--festive-green);
+  /* Christmas Green */
+  --secondary-foreground: #FFFFFF;
+  --muted: #F3F4F6;
+  --muted-foreground: #6B7280;
+  --accent: var(--festive-gold);
+  /* Festive Gold */
+  --accent-foreground: #1F2937;
+  --destructive: #EF4444;
+  --border: #E5E7EB;
+  --input: #E5E7EB;
+  --ring: var(--festive-red);
+  --chart-1: var(--festive-red);
+  --chart-2: var(--festive-green);
+  --chart-3: var(--festive-gold);
+  --chart-4: #DC2626;
+  --chart-5: #16A34A;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #1F2937;
+  --sidebar-primary: var(--festive-red);
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: var(--festive-green);
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #E5E7EB;
+  --sidebar-ring: var(--festive-red);
 }
+
 
 .dark {
   --background: oklch(0.145 0 0);
@@ -159,6 +173,47 @@
       padding-top: 2rem;
       padding-bottom: 2rem;
     }
+  }
+
+  /* 🎄 FESTIVE BACKGROUND GRADIENTS */
+  .festive-gradient-bg {
+    background: linear-gradient(135deg,
+        #FEF2F2 0%,
+        #FEE2E2 15%,
+        #DCFCE7 35%,
+        #FEF2F2 50%,
+        #FEE2E2 65%,
+        #DCFCE7 85%,
+        #FEF2F2 100%);
+    background-size: 400% 400%;
+    animation: festive-gradient 15s ease infinite;
+  }
+
+  .festive-red-gradient {
+    background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
+  }
+
+  .festive-green-gradient {
+    background: linear-gradient(135deg, #16A34A 0%, #15803D 100%);
+  }
+
+  .festive-gold-gradient {
+    background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
+  }
+}
+
+/* 🎄 Festive Gradient Animation */
+@keyframes festive-gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
   }
 }
 

@@ -64,7 +64,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col pb-20 bg-gray-50 min-h-screen">
+    <div className="flex flex-col pb-20 festive-gradient-bg min-h-screen">
       <JsonLd data={websiteSchema} />
 
       {/* Location Modal */}
@@ -83,14 +83,13 @@ export default function Home() {
         currentLocation={selectedLocation}
       />
 
-      {/* Location & Delivery Bar */}
-      <div className="bg-gradient-to-r from-blue-900 to-blue-800 text-white">
+      {/* Location & Delivery Bar - FESTIVE THEME */}
+      <div className="festive-red-gradient text-white">
         <div className="container mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setIsLocationModalOpen(true)}
-              className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
-            >
+              className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
               <MapPin className="h-3.5 w-3.5" />
               <span className="font-bold text-xs md:text-sm">
                 {selectedLocation || 'No Location'}
@@ -101,17 +100,17 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Location Prompt */}
-        <div className="bg-orange-600 py-2">
+        {/* Location Prompt - FESTIVE GREEN */}
+        <div className="festive-green-gradient py-2">
           <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-2 md:gap-0">
             <div className="flex items-center gap-2 text-center md:text-left">
               <MapPin className="h-4 w-4 shrink-0 text-white" />
-              <span className="text-[10px] md:text-xs text-white">Give us your exact location for seamless delivery</span>
+              <span className="text-[10px] md:text-xs text-white">🎄 Holiday Special: Give us your exact location for seamless delivery!</span>
             </div>
             <Button
               size="sm"
               variant="outline"
-              className="bg-transparent border-white text-white hover:bg-orange-700 w-full md:w-auto text-[10px] md:text-xs h-7 md:h-8 min-h-0"
+              className="bg-white border-white text-green-700 hover:bg-yellow-100 hover:text-green-800 font-bold w-full md:w-auto text-[10px] md:text-xs h-7 md:h-8 min-h-0"
               onClick={() => {
                 if (selectedLocation) {
                   if (!user) {
@@ -125,25 +124,25 @@ export default function Home() {
                 }
               }}
             >
-              {selectedLocation ? 'Add address details' : 'Detect location'}
+              {selectedLocation ? '🎁 Add address details' : '📍 Detect location'}
             </Button>
           </div>
         </div>
       </div>
 
-      {/* App Download Banner */}
-      <div className="bg-white border-b">
+      {/* App Download Banner - FESTIVE */}
+      <div className="bg-white border-b border-green-200">
         <div className="container mx-auto px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="bg-blue-600 p-1.5 rounded">
+            <div className="festive-green-gradient p-1.5 rounded">
               <Smartphone className="h-4 w-4 text-white" />
             </div>
             <div>
-              <p className="text-[10px] text-gray-500 leading-tight">Download app for</p>
-              <p className="font-bold text-blue-600 text-[10px] md:text-xs leading-tight">Faster app experience & more</p>
+              <p className="text-[10px] text-gray-500 leading-tight">🎄 Download app for</p>
+              <p className="font-bold text-green-700 text-[10px] md:text-xs leading-tight">Festive Offers & Faster Experience!</p>
             </div>
           </div>
-          <Button size="sm" disabled className="bg-gray-100 text-gray-400 border border-gray-200 hover:bg-gray-100 h-7 text-[10px] px-3">Coming Soon</Button>
+          <Button size="sm" disabled className="bg-red-50 text-red-400 border border-red-200 hover:bg-red-50 h-7 text-[10px] px-3">Coming Soon</Button>
         </div>
       </div>
 
@@ -325,10 +324,10 @@ export default function Home() {
                           ) : (
                             <Button
                               size="sm"
-                              className="bg-gray-800 hover:bg-gray-900 rounded-full h-5 text-[8px] px-2 w-full md:w-auto md:h-9 md:text-sm md:px-4"
+                              className="festive-red-gradient hover:opacity-90 text-white rounded-full h-5 text-[8px] px-2 w-full md:w-auto md:h-9 md:text-sm md:px-4 font-bold shadow-md"
                               onClick={handleAddToCart}
                             >
-                              Add <span className="hidden md:inline ml-1">→</span>
+                              Add <span className="hidden md:inline ml-1">🎁</span>
                             </Button>
                           )}
                         </div>
@@ -342,8 +341,8 @@ export default function Home() {
 
           <div className="text-center mt-6 md:mt-8">
             <Link href="/menu">
-              <Button variant="ghost" size="sm" className="font-bold text-xs md:text-sm hover:bg-transparent hover:text-orange-600">
-                View All Bestsellers →
+              <Button variant="ghost" size="sm" className="font-bold text-xs md:text-sm hover:bg-green-50 hover:text-green-700 text-red-600">
+                🎄 View All Festive Bestsellers →
               </Button>
             </Link>
           </div>
@@ -401,15 +400,17 @@ export default function Home() {
         {/* FAQ Section */}
         <FAQ />
 
-        {/* Trusted Brand */}
-        <section className="py-12 px-4 bg-gray-50 text-center">
+        {/* Trusted Brand - FESTIVE */}
+        <section className="py-12 px-4 bg-white text-center border-t-4 border-red-600">
           <div className="container mx-auto max-w-3xl">
-            <h2 className="font-bold mb-4 md:mb-6" style={{ fontSize: 'clamp(1.25rem, 4vw, 1.5rem)' }}>🍕 Order From a Trusted Local Pizza Brand</h2>
-            <p className="text-gray-600 mb-6">
-              The Pizza Box is known for delicious veg pizzas, great customer service, trendy casual ambience, freshly baked crusts, and student-friendly pricing.
+            <h2 className="font-bold mb-4 md:mb-6 text-red-700" style={{ fontSize: 'clamp(1.25rem, 4vw, 1.5rem)' }}>🎄 Celebrate with Meerut's Most Trusted Pizza Brand!</h2>
+            <p className="text-gray-700 mb-6">
+              The Pizza Box brings you festive joy with delicious veg pizzas, exceptional service, cozy ambience, freshly baked crusts, and special holiday pricing. <span className="font-semibold text-green-700">Make this season extra special!</span>
             </p>
             <Link href="/menu">
-              <Button className="bg-red-600 hover:bg-red-700">Explore Menu</Button>
+              <Button className="festive-red-gradient hover:opacity-90 text-white font-bold px-8 py-6 text-lg shadow-lg">
+                🍕 Explore Festive Menu
+              </Button>
             </Link>
           </div>
         </section>
