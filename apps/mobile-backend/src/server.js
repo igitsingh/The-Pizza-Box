@@ -32,9 +32,11 @@ app.get('/health', (req, res) => {
 
 // Import routes
 const authRoutes = require('./routes/auth.routes');
+const menuRoutes = require('./routes/menu.routes');
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/menu', menuRoutes);
 
 app.get('/api', (req, res) => {
     res.json({
