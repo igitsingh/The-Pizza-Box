@@ -23,6 +23,7 @@ model User {
   addresses  Address[]
   complaints Complaint[]
   orders     Order[]
+  feedbacks  Feedback[]
 }
 
 model Address {
@@ -151,6 +152,7 @@ model Order {
   invoiceGeneratedAt DateTime?
   couponCode        String?
   discountAmount    Float            @default(0)
+  feedback          Feedback?
 }
 
 model OrderItem {
@@ -353,4 +355,21 @@ model NotificationLog {
 enum DiscountType {
   FLAT
   PERCENTAGE
+}
+
+model Feedback {
+  id            String   @id @default(uuid())
+  orderId       String
+  userId        String?
+  guestPhone    String?
+  rating        Int      // 1-5 only
+  review        String?
+  adminResponse String?
+  isVisible     Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  order         Order    @relation(fields: [orderId], references: [id])
+  user          User?    @relation(fields: [userId], references: [id])
+
+  @@unique([orderId]) // One feedback per order
 }

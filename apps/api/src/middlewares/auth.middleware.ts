@@ -55,3 +55,5 @@ export const authorizeAdmin = (req: Request, res: Response, next: NextFunction) 
     }
     next();
 };
+
+export const optionalAuth = optionalAuthenticate;
