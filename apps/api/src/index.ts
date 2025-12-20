@@ -33,6 +33,8 @@ import settingsRoutes from './routes/settings.routes';
 import couponRoutes from './routes/coupon.routes';
 import feedbackRoutes from './routes/feedback.routes';
 import adminFeedbackRoutes from './routes/admin/feedback.routes';
+import enquiryRoutes from './routes/enquiry.routes';
+import adminEnquiryRoutes from './routes/admin/enquiry.routes';
 
 // Middleware
 app.use(express.json({
@@ -76,12 +78,14 @@ app.use('/api/admin/stock', adminStockRoutes);
 app.use('/api/admin/payments', adminPaymentRoutes);
 app.use('/api/admin/complaints', adminComplaintRoutes);
 app.use('/api/admin/feedbacks', adminFeedbackRoutes);
+app.use('/api/admin/enquiries', adminEnquiryRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/locations', locationRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/enquiry', enquiryRoutes);
 
 // Basic Route
 app.get('/', (req, res) => {

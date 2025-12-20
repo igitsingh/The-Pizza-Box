@@ -24,6 +24,7 @@ model User {
   complaints Complaint[]
   orders     Order[]
   feedbacks  Feedback[]
+  assignedEnquiries Enquiry[]
 }
 
 model Address {
@@ -372,4 +373,38 @@ model Feedback {
   user          User?    @relation(fields: [userId], references: [id])
 
   @@unique([orderId]) // One feedback per order
+}
+
+model Enquiry {
+  id          String        @id @default(uuid())
+  name        String
+  email       String?
+  phone       String
+  message     String
+  source      EnquirySource @default(CONTACT_FORM)
+  status      EnquiryStatus @default(NEW)
+  assignedTo  String?
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  assignedUser User?        @relation(fields: [assignedTo], references: [id])
+}
+
+enum EnquirySource {
+  CONTACT_FORM
+  WHATSAPP
+  CALL_BACK
+  CHAT
+  PHONE
+  EMAIL
+}
+
+enum EnquiryStatus {
+  NEW
+  IN_PROGRESS
+  CONTACTED
+  CONVERTED
+  CLOSED
+  SPAM
 }
