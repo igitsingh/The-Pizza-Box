@@ -11,6 +11,10 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 
+// Initialize Firebase Cloud Messaging
+const { initializeFirebase } = require('./utils/fcm');
+initializeFirebase();
+
 // Middleware
 app.use(helmet()); // Security headers
 app.use(cors({
@@ -38,6 +42,7 @@ const cartRoutes = require('./routes/cart.routes');
 const orderRoutes = require('./routes/order.routes');
 const paymentRoutes = require('./routes/payment.routes');
 const adminRoutes = require('./routes/admin.routes');
+const notificationRoutes = require('./routes/notification.routes');
 
 // API Routes
 app.use('/api/auth', authRoutes);
@@ -47,6 +52,7 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.get('/api', (req, res) => {
     res.json({
