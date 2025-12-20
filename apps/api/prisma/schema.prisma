@@ -20,11 +20,27 @@ model User {
   isVIP      Boolean     @default(false)
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
+  
+  // Referral System
+  referralCode      String?   @unique
+  referredBy        String?
+  referralReward    Float     @default(0)
+  totalReferrals    Int       @default(0)
+  
+  // Membership System
+  membershipTier    MembershipTier @default(BRONZE)
+  membershipPoints  Int       @default(0)
+  lifetimeSpending  Float     @default(0)
+  
   addresses  Address[]
   complaints Complaint[]
   orders     Order[]
   feedbacks  Feedback[]
   assignedEnquiries Enquiry[]
+  referrer   User?     @relation("Referrals", fields: [referredBy], references: [id])
+  referrals  User[]    @relation("Referrals")
+  referrerTransactions ReferralTransaction[] @relation("ReferrerTransactions")
+  refereeTransactions  ReferralTransaction[] @relation("RefereeTransactions")
 }
 
 model Address {
@@ -407,4 +423,30 @@ enum EnquiryStatus {
   CONVERTED
   CLOSED
   SPAM
+}
+
+model ReferralTransaction {
+  id            String   @id @default(uuid())
+  referrerId    String
+  refereeId     String
+  rewardAmount  Float
+  orderValue    Float
+  status        ReferralStatus @default(PENDING)
+  createdAt     DateTime @default(now())
+  
+  referrer      User     @relation("ReferrerTransactions", fields: [referrerId], references: [id])
+  referee       User     @relation("RefereeTransactions", fields: [refereeId], references: [id])
+}
+
+enum MembershipTier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
+enum ReferralStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
 }
