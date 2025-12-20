@@ -174,32 +174,32 @@
       padding-bottom: 2rem;
     }
   }
+}
 
-  /* 🎄 FESTIVE BACKGROUND GRADIENTS */
-  .festive-gradient-bg {
-    background: linear-gradient(135deg,
-        #FEF2F2 0%,
-        #FEE2E2 15%,
-        #DCFCE7 35%,
-        #FEF2F2 50%,
-        #FEE2E2 65%,
-        #DCFCE7 85%,
-        #FEF2F2 100%);
-    background-size: 400% 400%;
-    animation: festive-gradient 15s ease infinite;
-  }
+/* 🎄 FESTIVE BACKGROUND GRADIENTS */
+.festive-gradient-bg {
+  background: linear-gradient(135deg,
+      #FEF2F2 0%,
+      #FEE2E2 15%,
+      #DCFCE7 35%,
+      #FEF2F2 50%,
+      #FEE2E2 65%,
+      #DCFCE7 85%,
+      #FEF2F2 100%);
+  background-size: 400% 400%;
+  animation: festive-gradient 15s ease infinite;
+}
 
-  .festive-red-gradient {
-    background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
-  }
+.festive-red-gradient {
+  background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
+}
 
-  .festive-green-gradient {
-    background: linear-gradient(135deg, #16A34A 0%, #15803D 100%);
-  }
+.festive-green-gradient {
+  background: linear-gradient(135deg, #16A34A 0%, #15803D 100%);
+}
 
-  .festive-gold-gradient {
-    background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
-  }
+.festive-gold-gradient {
+  background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
 }
 
 /* 🎄 Festive Gradient Animation */

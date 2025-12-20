@@ -33,7 +33,9 @@ export default function Home() {
         const res = await api.get('/menu/bestsellers');
         setBestsellers(res.data.slice(0, 3)); // Show top 3
       } catch (error) {
-        console.error('Failed to fetch bestsellers', error);
+        // Silently handle error - API might not be running
+        console.log('Bestsellers API not available - using fallback');
+        setBestsellers([]); // Set empty array as fallback
       } finally {
         setLoadingBestsellers(false);
       }
