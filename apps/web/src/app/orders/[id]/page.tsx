@@ -5,6 +5,7 @@ import api from '@/lib/api';
 import { useParams } from 'next/navigation';
 import { io } from 'socket.io-client';
 import { Loader2, CheckCircle, Clock, ChefHat, Truck, Package } from 'lucide-react';
+import FeedbackCard from '@/components/FeedbackCard';
 
 interface OrderItem {
     id: string;
@@ -20,6 +21,7 @@ interface Order {
     total: number;
     items: OrderItem[];
     createdAt: string;
+    customerPhone?: string;
     deliveryPartner?: {
         name: string;
         phone: string;
@@ -190,6 +192,13 @@ export default function OrderTrackingPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Feedback Card */}
+            <FeedbackCard
+                orderId={order.id}
+                orderStatus={order.status}
+                customerPhone={order.customerPhone}
+            />
         </div>
     );
 }
