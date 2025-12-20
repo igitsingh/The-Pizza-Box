@@ -30,7 +30,12 @@ app.get('/health', (req, res) => {
     });
 });
 
-// API Routes (will be added in Phase 2)
+// Import routes
+const authRoutes = require('./routes/auth.routes');
+
+// API Routes
+app.use('/api/auth', authRoutes);
+
 app.get('/api', (req, res) => {
     res.json({
         success: true,
