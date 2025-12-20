@@ -36,6 +36,7 @@ const menuRoutes = require('./routes/menu.routes');
 const addressRoutes = require('./routes/address.routes');
 const cartRoutes = require('./routes/cart.routes');
 const orderRoutes = require('./routes/order.routes');
+const paymentRoutes = require('./routes/payment.routes');
 
 // API Routes
 app.use('/api/auth', authRoutes);
@@ -43,6 +44,7 @@ app.use('/api/menu', menuRoutes);
 app.use('/api/users/me/addresses', addressRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/payments', paymentRoutes);
 
 app.get('/api', (req, res) => {
     res.json({
