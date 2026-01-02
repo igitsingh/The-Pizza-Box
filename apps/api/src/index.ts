@@ -54,7 +54,7 @@ app.use(express.json({
 }));
 app.use(cookieParser());
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002'],
+    origin: true, // Allow any origin
     credentials: true,
 }));
 app.use(helmet());
@@ -81,7 +81,7 @@ app.use('/api/admin/coupons', adminCouponRoutes);
 app.use('/api/admin/users', adminUserRoutes);
 app.use('/api/admin/settings', adminSettingsRoutes);
 app.use('/api/admin/delivery-partners', adminDeliveryPartnerRoutes);
-app.use('/api/admin/analytics', adminAnalyticsRoutes);
+app.use('/api/admin/metrics', adminAnalyticsRoutes);
 app.use('/api/admin/stock', adminStockRoutes);
 app.use('/api/admin/payments', adminPaymentRoutes);
 app.use('/api/admin/complaints', adminComplaintRoutes);
@@ -122,7 +122,7 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 5001;
 
-httpServer.listen(PORT, () => {
+httpServer.listen(Number(PORT), '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`API Ready at http://localhost:${PORT}`);
 });

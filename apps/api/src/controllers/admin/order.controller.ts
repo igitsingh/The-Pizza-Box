@@ -97,6 +97,19 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'Invalid order status' });
         }
 
+        const currentOrder = await prisma.order.findUnique({ where: { id } });
+        if (!currentOrder) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        // GUARD: Cannot move to OUT_FOR_DELIVERY without a partner
+        if (status === 'OUT_FOR_DELIVERY' && !currentOrder.deliveryPartnerId) {
+            // Check if it's being updated in this same request? (Not possible with this simple update body, usually assign is separate)
+            return res.status(400).json({
+                message: 'Cannot mark as Out For Delivery! Please assign a Delivery Partner first.'
+            });
+        }
+
         const order = await prisma.order.update({
             where: { id },
             data: {

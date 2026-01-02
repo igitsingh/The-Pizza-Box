@@ -1,73 +1,43 @@
 import { Request, Response } from 'express';
-import Stripe from 'stripe';
+import Razorpay from 'razorpay';
+import crypto from 'crypto';
 import prisma from '../config/db';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder', {
-    typescript: true,
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_placeholder',
+    key_secret: process.env.RAZORPAY_KEY_SECRET || 'secret_placeholder'
 });
 
-export const createPaymentIntent = async (req: Request, res: Response): Promise<void> => {
+export const createPaymentOrder = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { orderId } = req.body;
+        const { amount } = req.body; // Amount in Rupees
 
-        const order = await prisma.order.findUnique({
-            where: { id: orderId },
-        });
-
-        if (!order) {
-            res.status(404).json({ message: 'Order not found' });
+        if (!amount) {
+            res.status(400).json({ message: 'Amount is required' });
             return;
         }
 
-        // Mock for development if key is placeholder
-        if (process.env.STRIPE_SECRET_KEY === 'sk_test_placeholder' || !process.env.STRIPE_SECRET_KEY) {
-            console.log('Using MOCK payment intent for development');
-            res.json({ clientSecret: 'mock_client_secret_for_dev' });
-            return;
-        }
+        const options = {
+            amount: Math.round(amount * 100), // convert to paise
+            currency: 'INR',
+            receipt: `receipt_${Date.now()}`,
+        };
 
-        const paymentIntent = await stripe.paymentIntents.create({
-            amount: Math.round(order.total * 100), // Amount in cents
-            currency: 'inr',
-            metadata: {
-                orderId: order.id,
-            },
-        });
-
-        res.json({ clientSecret: paymentIntent.client_secret });
+        const order = await razorpay.orders.create(options);
+        res.json(order);
     } catch (error) {
-        console.error('Stripe error:', error);
+        console.error('Razorpay order creation failed:', error);
         res.status(500).json({ message: 'Payment initiation failed' });
     }
 };
 
-export const handleWebhook = async (req: Request, res: Response): Promise<void> => {
-    const sig = req.headers['stripe-signature'] as string;
-    let event;
+export const verifyPaymentSignature = (orderId: string, paymentId: string, signature: string): boolean => {
+    const secret = process.env.RAZORPAY_KEY_SECRET || 'secret_placeholder';
+    const generated_signature = crypto
+        .createHmac('sha256', secret)
+        .update(orderId + '|' + paymentId)
+        .digest('hex');
 
-    try {
-        event = stripe.webhooks.constructEvent(
-            req.body,
-            sig,
-            process.env.STRIPE_WEBHOOK_SECRET || ''
-        );
-    } catch (err: any) {
-        res.status(400).send(`Webhook Error: ${err.message} `);
-        return;
-    }
-
-    if (event.type === 'payment_intent.succeeded') {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent;
-        const orderId = paymentIntent.metadata.orderId;
-
-        if (orderId) {
-            await prisma.order.update({
-                where: { id: orderId },
-                data: { status: 'PREPARING' }, // Or a specific PAID status if we had one
-            });
-            // Emit socket event here if needed
-        }
-    }
-
-    res.json({ received: true });
+    return generated_signature === signature;
 };
+

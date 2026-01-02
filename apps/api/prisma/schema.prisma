@@ -269,6 +269,7 @@ model Settings {
   smsEnabled           Boolean @default(false)
   emailEnabled         Boolean @default(false)
   closedMessage        String?
+  lastOrderTime        String?  // HH:mm format for auto-cutoff
   seoTitle       String?
   seoDescription String?
   seoOgImage     String?

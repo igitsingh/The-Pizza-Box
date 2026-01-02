@@ -48,14 +48,28 @@ export default function ProfilePage() {
         const fetchData = async () => {
             try {
                 const [ordersRes, userRes] = await Promise.all([
-                    api.get('/orders/my'),
-                    api.get('/auth/me') // Refresh user data to get addresses
+                    api.get('/orders/my').catch(err => {
+                        // If 401/404 on orders, it might just mean no orders OR invalid user.
+                        // We let the auth/me call decide the auth state.
+                        if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+                            throw err; // Re-throw to trigger catch block
+                        }
+                        return { data: [] }; // Return empty orders if other error
+                    }),
+                    api.get('/auth/me') // This is critical. If this fails, we logout.
                 ]);
-                setOrders(ordersRes.data);
-                setAddresses(userRes.data.addresses || []);
+
+                setOrders(ordersRes.data || []);
+                setAddresses(userRes.data?.addresses || []);
                 setUser(userRes.data); // Update store
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to fetch profile data', error);
+                if (error.response && (error.response.status === 401 || error.response.status === 404)) {
+                    // Token invalid or User deleted
+                    localStorage.removeItem('token');
+                    setUser(null);
+                    router.push('/login');
+                }
             } finally {
                 setLoading(false);
             }
@@ -101,7 +115,8 @@ export default function ProfilePage() {
                         <h2 className="text-xl font-bold mb-4">Account Details</h2>
                         <div className="space-y-2">
                             <p className="text-gray-600"><span className="font-semibold">Name:</span> {user?.name}</p>
-                            <p className="text-gray-600"><span className="font-semibold">Email:</span> {user?.email}</p>
+                            <p className="text-gray-600"><span className="font-semibold">Email:</span> {user?.email || 'N/A'}</p>
+                            <p className="text-gray-600"><span className="font-semibold">Phone:</span> {user?.phone || 'N/A'}</p>
                         </div>
                     </div>
 

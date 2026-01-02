@@ -44,13 +44,17 @@ interface OrderItem {
 
 interface Order {
     id: string
-    orderNumber: string
+    orderNumber: number // Update this to number as per schema, though string worked likely due to loose typing
     status: OrderStatus
     total: number
     createdAt: string
-    customerName: string
-    customerPhone: string
-    deliveryType: string
+    customerName?: string
+    customerPhone?: string
+    user?: {
+        name: string
+        phone: string | null
+    }
+    deliveryType: string // This probably maps to orderType or is derived
     locationName?: string
     items: OrderItem[]
     notes?: string
@@ -236,12 +240,12 @@ export default function KitchenPage() {
                                                                                 </Badge>
                                                                             </div>
                                                                             <h3 className="font-bold text-slate-900 leading-tight">
-                                                                                {order.customerName || "Walk-in Guest"}
+                                                                                {order.user?.name || order.customerName || "Walk-in Guest"}
                                                                             </h3>
-                                                                            {order.customerPhone && (
+                                                                            {(order.user?.phone || order.customerPhone) && (
                                                                                 <div className="flex items-center gap-1.5 text-slate-400 mt-1">
                                                                                     <Phone className="h-3 w-3" />
-                                                                                    <span className="text-xs font-medium">{order.customerPhone}</span>
+                                                                                    <span className="text-xs font-medium">{order.user?.phone || order.customerPhone}</span>
                                                                                 </div>
                                                                             )}
                                                                         </div>

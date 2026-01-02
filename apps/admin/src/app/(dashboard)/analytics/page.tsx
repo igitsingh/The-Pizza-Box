@@ -34,10 +34,10 @@ export default function AnalyticsPage() {
         const fetchData = async () => {
             try {
                 const [trendRes, topItemsRes, statusRes, statsRes] = await Promise.all([
-                    api.get('/analytics/sales-trend?range=month'),
-                    api.get('/analytics/top-items'),
-                    api.get('/analytics/orders-by-status'),
-                    api.get('/analytics/stats')
+                    api.get('/metrics/sales-trend?range=month'),
+                    api.get('/metrics/top-items'),
+                    api.get('/metrics/orders-by-status'),
+                    api.get('/metrics/stats')
                 ]);
 
                 setSalesTrend(trendRes.data);

@@ -1,9 +1,10 @@
 import { Router } from 'express';
-import { createOrder, getOrders, getOrder, updateOrderStatus, getMyOrders, lookupOrder, repeatOrder, getOrderNotifications, downloadInvoice } from '../controllers/order.controller';
+import { createOrder, getOrders, getOrder, updateOrderStatus, getMyOrders, lookupOrder, repeatOrder, getOrderNotifications, downloadInvoice, validateDelivery } from '../controllers/order.controller';
 import { authenticate, authorizeAdmin, optionalAuthenticate } from '../middlewares/auth.middleware';
 
 const router = Router();
 
+router.post('/validate-delivery', optionalAuthenticate, validateDelivery);
 router.post('/', optionalAuthenticate, createOrder); // Optional for Guest
 router.get('/my', authenticate, getMyOrders); // Logged-in history
 router.post('/lookup', lookupOrder); // Guest lookup

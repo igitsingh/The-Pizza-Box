@@ -59,7 +59,7 @@ const Footer = () => {
                             <span style={{ color: '#f20707' }}>HOUSE OF FLOYDS</span> CREATION
                         </p>
                         <p className="text-[10px] text-gray-600 uppercase tracking-wider">
-                            made in india 🇮🇳
+                            BUILT IN MEERUT 🇮🇳
                         </p>
                     </div>
                 </div>

@@ -17,8 +17,14 @@ export default function DashboardPage() {
         activeOrders: 0,
         lowStockItems: 0,
         repeatCustomerRate: 0,
-        totalUsers: 0
+        totalUsers: 0,
+        pendingOrders: 0,
+        preparingOrders: 0,
+        outForDeliveryOrders: 0,
+        newComplaints: 0,
+        newFeedbacks: 0
     });
+
     const [salesTrend, setSalesTrend] = useState([]);
     const [topItems, setTopItems] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -28,9 +34,9 @@ export default function DashboardPage() {
         const fetchData = async () => {
             try {
                 const [statsRes, trendRes, topItemsRes] = await Promise.all([
-                    api.get('/analytics/stats'),
-                    api.get(`/analytics/sales-trend?range=${timeRange}`),
-                    api.get('/analytics/top-items')
+                    api.get('/metrics/stats'),
+                    api.get(`/metrics/sales-trend?range=${timeRange}`),
+                    api.get('/metrics/top-items')
                 ]);
 
                 setStats(statsRes.data);
@@ -55,6 +61,7 @@ export default function DashboardPage() {
 
     return (
         <div className="flex-1 space-y-4 md:space-y-8 p-4 md:p-8 pt-4 md:pt-6 bg-slate-50/50 min-h-screen">
+            {/* ... (Header unchanged) */}
             <div className="flex items-center justify-between space-y-2">
                 <div>
                     <h2 className="text-xl md:text-3xl font-bold tracking-tight text-slate-900">Dashboard</h2>
@@ -62,91 +69,141 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 md:gap-6 lg:grid-cols-5">
+            {/* Metrics Grid */}
+            <div className="grid grid-cols-2 gap-3 md:gap-6 lg:grid-cols-4 xl:grid-cols-7">
                 <Link href="/payments" className="block">
-                    <Card className="border-none shadow-sm bg-white hover:shadow-md transition-shadow cursor-pointer">
+                    <Card className="border-none shadow-sm bg-white hover:shadow-md transition-shadow cursor-pointer h-full">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 md:pb-2">
                             <CardTitle className="text-xs md:text-sm font-medium text-slate-500">
-                                Total Sales Today
+                                Total Sales
                             </CardTitle>
                             <div className="h-6 w-6 md:h-8 md:w-8 rounded-full bg-green-100 flex items-center justify-center">
                                 <IndianRupee className="h-3 w-3 md:h-4 md:w-4 text-green-600" />
                             </div>
                         </CardHeader>
                         <CardContent className="pb-3 md:pb-4">
-                            <div className="text-lg md:text-2xl font-bold text-slate-900">{formatCurrency(stats.totalSalesToday)}</div>
+                            <div className="text-lg md:text-xl font-bold text-slate-900">{formatCurrency(stats.totalSalesToday)}</div>
                             <div className="flex items-center text-[10px] md:text-xs text-slate-500 mt-0.5 md:mt-1">
-                                Today's revenue
+                                Today's Revenue
                             </div>
                         </CardContent>
                     </Card>
                 </Link>
 
-                <Link href="/orders" className="block">
-                    <Card className="border-none shadow-sm bg-white hover:shadow-md transition-shadow cursor-pointer">
+                <Link href="/orders?status=PENDING" className="block">
+                    <Card className="border-none shadow-sm bg-white hover:shadow-md transition-shadow cursor-pointer relative overflow-hidden h-full">
+                        {/* @ts-ignore */}
+                        {stats.pendingOrders > 0 && (
+                            <div className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-pulse m-2" />
+                        )}
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 md:pb-2">
                             <CardTitle className="text-xs md:text-sm font-medium text-slate-500">
-                                Orders Today
+                                Pending
                             </CardTitle>
-                            <div className="h-6 w-6 md:h-8 md:w-8 rounded-full bg-orange-100 flex items-center justify-center">
-                                <ShoppingBag className="h-3 w-3 md:h-4 md:w-4 text-orange-600" />
+                            <div className="h-6 w-6 md:h-8 md:w-8 rounded-full bg-yellow-100 flex items-center justify-center">
+                                <AlertTriangle className="h-3 w-3 md:h-4 md:w-4 text-yellow-600" />
                             </div>
                         </CardHeader>
                         <CardContent className="pb-3 md:pb-4">
-                            <div className="text-lg md:text-2xl font-bold text-slate-900">{stats.totalOrdersToday}</div>
+                            {/* @ts-ignore */}
+                            <div className="text-lg md:text-xl font-bold text-slate-900">{stats.pendingOrders || 0}</div>
                             <div className="flex items-center text-[10px] md:text-xs text-slate-500 mt-0.5 md:mt-1">
-                                Orders placed today
+                                Action required
                             </div>
                         </CardContent>
                     </Card>
                 </Link>
 
-                <Link href="/orders?status=active" className="block">
-                    <Card className="border-none shadow-sm bg-white hover:shadow-md transition-shadow cursor-pointer">
+                <Link href="/orders?status=PREPARING" className="block">
+                    <Card className="border-none shadow-sm bg-white hover:shadow-md transition-shadow cursor-pointer h-full">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 md:pb-2">
-                            <CardTitle className="text-xs md:text-sm font-medium text-slate-500">Active Orders</CardTitle>
+                            <CardTitle className="text-xs md:text-sm font-medium text-slate-500">Preparing</CardTitle>
                             <div className="h-6 w-6 md:h-8 md:w-8 rounded-full bg-blue-100 flex items-center justify-center">
                                 <Activity className="h-3 w-3 md:h-4 md:w-4 text-blue-600" />
                             </div>
                         </CardHeader>
                         <CardContent className="pb-3 md:pb-4">
-                            <div className="text-lg md:text-2xl font-bold text-slate-900">{stats.activeOrders}</div>
+                            {/* @ts-ignore */}
+                            <div className="text-lg md:text-xl font-bold text-slate-900">{stats.preparingOrders || 0}</div>
                             <div className="flex items-center text-[10px] md:text-xs text-blue-600 mt-0.5 md:mt-1">
-                                In progress
+                                In Kitchen
                             </div>
                         </CardContent>
                     </Card>
                 </Link>
 
-                <Link href="/menu" className="block">
-                    <Card className="border-none shadow-sm bg-white hover:shadow-md transition-shadow cursor-pointer">
+                <Link href="/orders?status=OUT_FOR_DELIVERY" className="block">
+                    <Card className="border-none shadow-sm bg-white hover:shadow-md transition-shadow cursor-pointer h-full">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 md:pb-2">
-                            <CardTitle className="text-xs md:text-sm font-medium text-slate-500">Low Stock Items</CardTitle>
-                            <div className={`h-6 w-6 md:h-8 md:w-8 rounded-full flex items-center justify-center ${stats.lowStockItems > 0 ? 'bg-red-100' : 'bg-green-100'}`}>
-                                <AlertTriangle className={`h-3 w-3 md:h-4 md:w-4 ${stats.lowStockItems > 0 ? 'text-red-600' : 'text-green-600'}`} />
+                            <CardTitle className="text-xs md:text-sm font-medium text-slate-500">On Delivery</CardTitle>
+                            <div className="h-6 w-6 md:h-8 md:w-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                                <Activity className="h-3 w-3 md:h-4 md:w-4 text-indigo-600" />
                             </div>
                         </CardHeader>
                         <CardContent className="pb-3 md:pb-4">
-                            <div className="text-lg md:text-2xl font-bold text-slate-900">{stats.lowStockItems}</div>
-                            <div className={`flex items-center text-[10px] md:text-xs mt-0.5 md:mt-1 ${stats.lowStockItems > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                Items need restocking
+                            {/* @ts-ignore */}
+                            <div className="text-lg md:text-xl font-bold text-slate-900">{stats.outForDeliveryOrders || 0}</div>
+                            <div className="flex items-center text-[10px] md:text-xs text-indigo-600 mt-0.5 md:mt-1">
+                                On the way
                             </div>
                         </CardContent>
                     </Card>
                 </Link>
 
-                <Link href="/customers" className="block col-span-2 lg:col-span-1">
-                    <Card className="border-none shadow-sm bg-white hover:shadow-md transition-shadow cursor-pointer">
+                <Link href="/inventory" className="block">
+                    <Card className="border-none shadow-sm bg-white hover:shadow-md transition-shadow cursor-pointer h-full">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 md:pb-2">
-                            <CardTitle className="text-xs md:text-sm font-medium text-slate-500">Repeat Rate</CardTitle>
-                            <div className="h-6 w-6 md:h-8 md:w-8 rounded-full bg-purple-100 flex items-center justify-center">
-                                <TrendingUp className="h-3 w-3 md:h-4 md:w-4 text-purple-600" />
+                            <CardTitle className="text-xs md:text-sm font-medium text-slate-500">Low Stock</CardTitle>
+                            <div className={`h-6 w-6 md:h-8 md:w-8 rounded-full flex items-center justify-center ${stats.lowStockItems > 0 ? 'bg-red-100' : 'bg-slate-100'}`}>
+                                <ShoppingBag className={`h-3 w-3 md:h-4 md:w-4 ${stats.lowStockItems > 0 ? 'text-red-600' : 'text-slate-600'}`} />
                             </div>
                         </CardHeader>
                         <CardContent className="pb-3 md:pb-4">
-                            <div className="text-lg md:text-2xl font-bold text-slate-900">{stats.repeatCustomerRate}%</div>
-                            <div className="flex items-center text-[10px] md:text-xs text-purple-600 mt-0.5 md:mt-1">
-                                Retained customers
+                            <div className="text-lg md:text-xl font-bold text-slate-900">{stats.lowStockItems || 0}</div>
+                            <div className={`flex items-center text-[10px] md:text-xs mt-0.5 md:mt-1 ${stats.lowStockItems > 0 ? 'text-red-600 font-bold' : 'text-slate-500'}`}>
+                                Items to restock
+                            </div>
+                        </CardContent>
+                    </Card>
+                </Link>
+
+                <Link href="/complaints" className="block">
+                    <Card className="border-none shadow-sm bg-white hover:shadow-md transition-shadow cursor-pointer h-full">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 md:pb-2">
+                            <CardTitle className="text-xs md:text-sm font-medium text-slate-500">Complaints</CardTitle>
+                            {/* @ts-ignore */}
+                            <div className={`h-6 w-6 md:h-8 md:w-8 rounded-full flex items-center justify-center ${stats.newComplaints > 0 ? 'bg-red-100' : 'bg-slate-100'}`}>
+                                {/* @ts-ignore */}
+                                <AlertTriangle className={`h-3 w-3 md:h-4 md:w-4 ${stats.newComplaints > 0 ? 'text-red-600' : 'text-slate-600'}`} />
+                            </div>
+                        </CardHeader>
+                        <CardContent className="pb-3 md:pb-4">
+                            {/* @ts-ignore */}
+                            <div className="text-lg md:text-xl font-bold text-slate-900">{stats.newComplaints || 0}</div>
+                            {/* @ts-ignore */}
+                            <div className={`flex items-center text-[10px] md:text-xs mt-0.5 md:mt-1 ${stats.newComplaints > 0 ? 'text-red-600 font-bold' : 'text-slate-500'}`}>
+                                New / Open
+                            </div>
+                        </CardContent>
+                    </Card>
+                </Link>
+
+                <Link href="/feedbacks" className="block">
+                    <Card className="border-none shadow-sm bg-white hover:shadow-md transition-shadow cursor-pointer h-full">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 md:pb-2">
+                            <CardTitle className="text-xs md:text-sm font-medium text-slate-500">Feedbacks</CardTitle>
+                            {/* @ts-ignore */}
+                            <div className={`h-6 w-6 md:h-8 md:w-8 rounded-full flex items-center justify-center ${stats.newFeedbacks > 0 ? 'bg-orange-100' : 'bg-slate-100'}`}>
+                                {/* @ts-ignore */}
+                                <Users className={`h-3 w-3 md:h-4 md:w-4 ${stats.newFeedbacks > 0 ? 'text-orange-600' : 'text-slate-600'}`} />
+                            </div>
+                        </CardHeader>
+                        <CardContent className="pb-3 md:pb-4">
+                            {/* @ts-ignore */}
+                            <div className="text-lg md:text-xl font-bold text-slate-900">{stats.newFeedbacks || 0}</div>
+                            {/* @ts-ignore */}
+                            <div className={`flex items-center text-[10px] md:text-xs mt-0.5 md:mt-1 ${stats.newFeedbacks > 0 ? 'text-orange-600 font-bold' : 'text-slate-500'}`}>
+                                Unread Reviews
                             </div>
                         </CardContent>
                     </Card>

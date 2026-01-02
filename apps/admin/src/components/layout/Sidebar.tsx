@@ -23,7 +23,8 @@ import {
     Trophy,
     Package,
     MessageSquare,
-    ChefHat
+    ChefHat,
+    Star
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import api from "@/lib/api"
@@ -107,6 +108,11 @@ const sidebarItems = [
         icon: MessageSquareWarning,
     },
     {
+        title: "Feedbacks",
+        href: "/feedbacks",
+        icon: Star,
+    },
+    {
         title: "Enquiries",
         href: "/enquiries",
         icon: MessageSquare,
@@ -121,7 +127,19 @@ const sidebarItems = [
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
     const pathname = usePathname()
     const router = useRouter()
-    const [orderStats, setOrderStats] = useState<{ pending: number, active: number, complaintsOpen: number }>({ pending: 0, active: 0, complaintsOpen: 0 })
+    const [orderStats, setOrderStats] = useState<{
+        pending: number,
+        active: number,
+        complaintsOpen: number,
+        feedbacksNew: number,
+        enquiriesNew: number
+    }>({
+        pending: 0,
+        active: 0,
+        complaintsOpen: 0,
+        feedbacksNew: 0,
+        enquiriesNew: 0
+    })
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -134,8 +152,8 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         }
 
         fetchStats()
-        // Poll every 15 seconds
-        const interval = setInterval(fetchStats, 15000)
+        // Poll every 30 seconds (Smart Polling - Reduced from 15s)
+        const interval = setInterval(fetchStats, 30000)
         return () => clearInterval(interval)
     }, [])
 
@@ -179,7 +197,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                                 <item.icon className={cn("h-5 w-5", isActive ? "text-white" : "text-gray-400")} />
                                 <span className="flex-1">{item.title}</span>
                                 {item.title === 'Orders' && orderStats.pending > 0 && (
-                                    <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">
+                                    <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center animate-pulse">
                                         {orderStats.pending}
                                     </span>
                                 )}
@@ -191,6 +209,16 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                                 {item.title === 'Complaints' && orderStats.complaintsOpen > 0 && (
                                     <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">
                                         {orderStats.complaintsOpen}
+                                    </span>
+                                )}
+                                {item.title === 'Feedbacks' && orderStats.feedbacksNew > 0 && (
+                                    <span className="bg-yellow-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">
+                                        {orderStats.feedbacksNew}
+                                    </span>
+                                )}
+                                {item.title === 'Enquiries' && orderStats.enquiriesNew > 0 && (
+                                    <span className="bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">
+                                        {orderStats.enquiriesNew}
                                     </span>
                                 )}
                             </Link>

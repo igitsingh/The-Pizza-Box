@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useSearchParams } from "next/navigation"
-import { Search, Eye, Bike, Bell, FileText, ExternalLink } from "lucide-react"
+import { Search, Eye, Bike, Bell, FileText, ExternalLink, AlertTriangle } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { format } from "date-fns"
@@ -52,11 +52,13 @@ type OrderItem = {
 type Order = {
     id: string
     orderNumber: number
-    user: {
+    user?: {
         name: string
         email: string
         phone?: string
     }
+    customerName?: string
+    customerPhone?: string
     status: "SCHEDULED" | "PENDING" | "ACCEPTED" | "PREPARING" | "BAKING" | "READY_FOR_PICKUP" | "OUT_FOR_DELIVERY" | "DELIVERED" | "CANCELLED"
     total: number
     subtotal?: number
@@ -132,7 +134,7 @@ export default function OrdersPage() {
         fetchOrders()
         fetchDeliveryPartners()
 
-        const interval = setInterval(fetchOrders, 10000)
+        const interval = setInterval(fetchOrders, 30000)
         return () => clearInterval(interval)
     }, [])
 
@@ -178,18 +180,27 @@ export default function OrdersPage() {
         }
     }
 
+    const [isUpdating, setIsUpdating] = useState(false)
+
+
+
     const updateStatus = async (id: string, newStatus: string) => {
+        if (isUpdating) return
+        setIsUpdating(true)
         try {
             await api.put(`/orders/${id}/status`, { status: newStatus })
             toast.success(`Order status updated to ${newStatus}`)
             fetchOrders()
         } catch (error) {
             toast.error("Failed to update status")
+        } finally {
+            setIsUpdating(false)
         }
     }
 
     const assignPartner = async () => {
-        if (!selectedOrder || !selectedPartnerId) return
+        if (!selectedOrder || !selectedPartnerId || isUpdating) return
+        setIsUpdating(true)
         try {
             await api.put(`/orders/${selectedOrder.id}/assign-partner`, { deliveryPartnerId: selectedPartnerId })
             toast.success("Delivery partner assigned")
@@ -197,37 +208,26 @@ export default function OrdersPage() {
             fetchOrders()
         } catch (error) {
             toast.error("Failed to assign partner")
+        } finally {
+            setIsUpdating(false)
         }
     }
+
+
 
     const filteredOrders = orders.filter(order => {
         // Tab Filter
         if (activeTab === 'scheduled') {
             if (order.orderType !== 'SCHEDULED' && order.status !== 'SCHEDULED') return false;
         } else {
-            // Active/Instant Tab
-            // Show all INSTANT orders
-            // AND any SCHEDULED orders that are "Active" (i.e. processed/accepted) ??
-            // Actually, usually "Scheduled" tab holds orders WAITING to be processed.
-            // Once they are ACCEPTED/BAKING, they are "Active".
-            // Logic: If status is 'SCHEDULED', it belongs in Scheduled tab.
-            // If status is PENDING/ACCEPTED etc, it belongs in Active tab?
-            // Or strict separation by Type?
-
-            // User Req: "Separate Instant vs Scheduled tabs".
-            // Let's stick to Type for simplicity, or Status.
-            // Best: 
-            // Scheduled Tab: Status = SCHEDULED
-            // Active/Instant Tab: Status != SCHEDULED
-
             if (order.status === 'SCHEDULED') return false;
         }
 
         const matchesSearch =
             order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
             `TPB${String(order.orderNumber).padStart(5, '0')}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            order.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            order.user.email.toLowerCase().includes(searchQuery.toLowerCase())
+            (order.user?.name || order.customerName || "Guest").toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (order.user?.email || "").toLowerCase().includes(searchQuery.toLowerCase())
 
         let matchesStatus = false
         if (statusFilter === "ACTIVE") {
@@ -351,8 +351,8 @@ export default function OrdersPage() {
                                             TPB{String(order.orderNumber).padStart(5, '0')}
                                         </TableCell>
                                         <TableCell>
-                                            <div className="font-medium">{order.user.name}</div>
-                                            <div className="text-xs text-slate-500">{order.user.email}</div>
+                                            <div className="font-medium">{order.user?.name || order.customerName || "Guest"}</div>
+                                            <div className="text-xs text-slate-500">{order.user?.email || order.customerPhone || "Walk-in"}</div>
                                         </TableCell>
                                         <TableCell className="max-w-[300px]">
                                             <div className="text-sm text-slate-700 line-clamp-2">
@@ -505,13 +505,22 @@ export default function OrdersPage() {
                                 <div className="grid grid-cols-2 gap-4 text-sm">
                                     <div>
                                         <div className="font-semibold text-slate-500">Customer</div>
-                                        <div>{selectedOrder.user.name}</div>
-                                        <div>{selectedOrder.user.email}</div>
-                                        <div>{selectedOrder.user.phone || "No phone"}</div>
+                                        <div>{selectedOrder.user?.name || selectedOrder.customerName || "Guest"}</div>
+                                        <div>{selectedOrder.user?.email}</div>
+                                        <div>{selectedOrder.user?.phone || selectedOrder.customerPhone || "No phone"}</div>
                                     </div>
                                     <div>
                                         <div className="font-semibold text-slate-500">Payment</div>
-                                        <div>{selectedOrder.paymentMethod}</div>
+                                        <div className="flex items-center gap-2">
+                                            {selectedOrder.paymentMethod}
+                                            {/* @ts-ignore */}
+                                            {selectedOrder.paymentDetails?.razorpay_payment_id && (
+                                                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-[10px] flex gap-1 items-center">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                                                    Razorpay Verified
+                                                </Badge>
+                                            )}
+                                        </div>
                                         <Badge variant={selectedOrder.paymentStatus === "PAID" ? "default" : "secondary"}>
                                             {selectedOrder.paymentStatus}
                                         </Badge>
@@ -528,6 +537,58 @@ export default function OrdersPage() {
                                         </div>
                                     </div>
                                 )}
+
+                                {/* Delivery & Delay Warning */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    {selectedOrder.deliveryPartner ? (
+                                        <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                            <div className="text-xs font-bold text-slate-500 uppercase mb-1">Delivery Partner</div>
+                                            <div className="flex items-center gap-2">
+                                                <Bike className="h-4 w-4 text-slate-700" />
+                                                <div className="font-semibold text-slate-900">{selectedOrder.deliveryPartner.name}</div>
+                                            </div>
+                                            <div className="text-xs text-slate-500 mt-1">{selectedOrder.deliveryPartner.phone}</div>
+                                        </div>
+                                    ) : (
+                                        selectedOrder.status !== "DELIVERED" && selectedOrder.status !== "CANCELLED" && selectedOrder.orderType !== "SCHEDULED" && (
+                                            <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-100">
+                                                <div className="flex items-center gap-2 text-yellow-800">
+                                                    <AlertTriangle className="h-4 w-4" />
+                                                    <span className="text-sm font-medium">No Delivery Partner</span>
+                                                </div>
+                                                <Button size="sm" variant="outline" className="mt-2 w-full h-8 text-xs bg-white hover:bg-yellow-50" onClick={() => {
+                                                    setIsDetailsOpen(false)
+                                                    setIsAssignPartnerOpen(true)
+                                                }}>
+                                                    Assign Now
+                                                </Button>
+                                            </div>
+                                        )
+                                    )}
+
+                                    {/* Delay Warning */}
+                                    {(() => {
+                                        const created = new Date(selectedOrder.createdAt).getTime();
+                                        const now = Date.now();
+                                        const diffMinutes = Math.floor((now - created) / 60000);
+                                        // Warning if > 45 mins and not delivered/cancelled/out
+                                        const isActive = ['PENDING', 'ACCEPTED', 'PREPARING', 'BAKING', 'READY_FOR_PICKUP'].includes(selectedOrder.status);
+                                        if (isActive && diffMinutes > 45) {
+                                            return (
+                                                <div className="bg-red-50 p-3 rounded-lg border border-red-100 animate-pulse">
+                                                    <div className="flex items-center gap-2 text-red-800">
+                                                        <AlertTriangle className="h-4 w-4" />
+                                                        <span className="text-sm font-bold">Delay Warning</span>
+                                                    </div>
+                                                    <div className="text-xs text-red-600 mt-1">
+                                                        Placed {diffMinutes} mins ago. Check Status!
+                                                    </div>
+                                                </div>
+                                            )
+                                        }
+                                        return null;
+                                    })()}
+                                </div>
 
                                 <div>
                                     <div className="font-semibold text-slate-500 mb-2">Items</div>
@@ -601,27 +662,27 @@ export default function OrdersPage() {
                                     <div className="font-semibold text-slate-500">Actions</div>
                                     <div className="flex flex-wrap gap-2">
                                         {selectedOrder.status === "SCHEDULED" && (
-                                            <Button onClick={() => updateStatus(selectedOrder.id, "PENDING")} className="bg-green-600 hover:bg-green-700">
+                                            <Button onClick={() => updateStatus(selectedOrder.id, "PENDING")} disabled={isUpdating} className="bg-green-600 hover:bg-green-700">
                                                 Activate / Move to Pending
                                             </Button>
                                         )}
                                         {selectedOrder.status === "PENDING" && (
-                                            <Button onClick={() => updateStatus(selectedOrder.id, "ACCEPTED")} className="bg-blue-500 hover:bg-blue-600">
+                                            <Button onClick={() => updateStatus(selectedOrder.id, "ACCEPTED")} disabled={isUpdating} className="bg-blue-500 hover:bg-blue-600">
                                                 Accept Order
                                             </Button>
                                         )}
                                         {selectedOrder.status === "ACCEPTED" && (
-                                            <Button onClick={() => updateStatus(selectedOrder.id, "PREPARING")} className="bg-yellow-500 hover:bg-yellow-600">
+                                            <Button onClick={() => updateStatus(selectedOrder.id, "PREPARING")} disabled={isUpdating} className="bg-yellow-500 hover:bg-yellow-600">
                                                 Start Preparing
                                             </Button>
                                         )}
                                         {selectedOrder.status === "PREPARING" && (
-                                            <Button onClick={() => updateStatus(selectedOrder.id, "BAKING")} className="bg-orange-500 hover:bg-orange-600">
+                                            <Button onClick={() => updateStatus(selectedOrder.id, "BAKING")} disabled={isUpdating} className="bg-orange-500 hover:bg-orange-600">
                                                 Start Baking
                                             </Button>
                                         )}
                                         {selectedOrder.status === "BAKING" && (
-                                            <Button onClick={() => updateStatus(selectedOrder.id, "READY_FOR_PICKUP")} className="bg-purple-500 hover:bg-purple-600">
+                                            <Button onClick={() => updateStatus(selectedOrder.id, "READY_FOR_PICKUP")} disabled={isUpdating} className="bg-purple-500 hover:bg-purple-600">
                                                 Ready for Pickup
                                             </Button>
                                         )}
@@ -631,18 +692,19 @@ export default function OrdersPage() {
                                                     setIsDetailsOpen(false)
                                                     setIsAssignPartnerOpen(true)
                                                 }}
+                                                disabled={isUpdating}
                                                 className="bg-indigo-500 hover:bg-indigo-600"
                                             >
                                                 Assign Delivery Partner
                                             </Button>
                                         )}
                                         {selectedOrder.status === "OUT_FOR_DELIVERY" && (
-                                            <Button onClick={() => updateStatus(selectedOrder.id, "DELIVERED")} className="bg-green-500 hover:bg-green-600">
+                                            <Button onClick={() => updateStatus(selectedOrder.id, "DELIVERED")} disabled={isUpdating} className="bg-green-500 hover:bg-green-600">
                                                 Mark Delivered
                                             </Button>
                                         )}
                                         {selectedOrder.status !== "DELIVERED" && selectedOrder.status !== "CANCELLED" && (
-                                            <Button variant="destructive" onClick={() => updateStatus(selectedOrder.id, "CANCELLED")}>
+                                            <Button variant="destructive" disabled={isUpdating} onClick={() => updateStatus(selectedOrder.id, "CANCELLED")}>
                                                 Cancel Order
                                             </Button>
                                         )}

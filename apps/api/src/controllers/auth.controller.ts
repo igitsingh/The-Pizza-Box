@@ -248,26 +248,7 @@ export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
         const { phone, otp, name } = otpSchema.parse(req.body);
         console.log(`[Auth] Verifying OTP for ${phone}: ${otp}`);
 
-        // Hardcoded bypass for development test account
-        if (phone === '9999999999' && otp === '123456') {
-            console.log('[Auth] Test account bypass triggered');
-            let user = await (prisma.user as any).findUnique({ where: { phone } });
-            if (!user) {
-                console.log('[Auth] Creating new test user');
-                user = await (prisma.user as any).create({
-                    data: {
-                        phone,
-                        name: name || 'Test User',
-                        email: `test-${Date.now()}@thepizzabox.in`,
-                        role: 'CUSTOMER'
-                    }
-                });
-            }
-            const token = generateToken(user.id, user.role);
-            console.log('[Auth] Bypass successful, token generated');
-            res.json({ token, user, isNewUser: false });
-            return;
-        }
+
 
         const user = await (prisma.user as any).findUnique({ where: { phone } });
 

@@ -63,13 +63,27 @@ export const getDashboardStats = async (req: Request, res: Response) => {
         // 6. Total Users (for context)
         const totalUsers = await prisma.user.count({ where: { role: 'CUSTOMER' } });
 
+        // 7. Status Breakdown
+        const pendingOrders = await prisma.order.count({ where: { status: 'PENDING' } });
+        const preparingOrders = await prisma.order.count({ where: { status: { in: ['ACCEPTED', 'PREPARING', 'BAKING'] } } });
+        const outForDeliveryOrders = await prisma.order.count({ where: { status: 'OUT_FOR_DELIVERY' } });
+
+        // 8. Action Items (Badges)
+        const newComplaints = await prisma.complaint.count({ where: { status: 'OPEN' } });
+        const newFeedbacks = await prisma.feedback.count({ where: { adminResponse: null } });
+
         res.json({
             totalSalesToday,
             totalOrdersToday,
             activeOrders,
             lowStockItems,
             repeatCustomerRate,
-            totalUsers
+            totalUsers,
+            pendingOrders,
+            preparingOrders,
+            outForDeliveryOrders,
+            newComplaints,
+            newFeedbacks
         });
     } catch (error) {
         console.error('Get dashboard stats error:', error);
