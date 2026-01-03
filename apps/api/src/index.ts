@@ -100,6 +100,9 @@ app.use('/api/feedback', feedbackRoutes);
 app.use('/api/enquiry', enquiryRoutes);
 app.use('/api/referral', referralRoutes);
 app.use('/api/membership', membershipRoutes);
+import debugRoutes from './routes/debug.routes';
+app.use('/api/debug', debugRoutes);
+
 app.use('/api/complaints', complaintRoutes);
 
 // Basic Route
