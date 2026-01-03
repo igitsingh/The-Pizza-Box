@@ -10,6 +10,7 @@
         "lint": "npm run lint --workspaces"
     },
     "devDependencies": {
+        "next": "^15.0.0-canary.160",
         "prettier": "^3.0.0"
     }
 }
