@@ -589,6 +589,11 @@ async function main() {
         ];
 
         for (const item of pizzas) {
+            const existing = await prisma.item.findUnique({ where: { slug: item.slug } });
+            if (existing) {
+                console.log(`Skipping existing pizza: ${item.name}`);
+                continue;
+            }
             const createdItem = await prisma.item.create({ data: { ...item, categoryId: pizzaCategory.id } });
 
             // Create Size Option
@@ -679,7 +684,11 @@ async function main() {
             }
         ];
         for (const item of burgers) {
-            await prisma.item.create({ data: { ...item, categoryId: burgerCategory.id } });
+            await prisma.item.upsert({
+                where: { slug: item.slug },
+                update: item,
+                create: { ...item, categoryId: burgerCategory.id },
+            });
         }
     }
 
@@ -724,7 +733,11 @@ async function main() {
             }
         ];
         for (const item of sides) {
-            await prisma.item.create({ data: { ...item, categoryId: sidesCategory.id } });
+            await prisma.item.upsert({
+                where: { slug: item.slug },
+                update: item,
+                create: { ...item, categoryId: sidesCategory.id },
+            });
         }
     }
 
@@ -756,7 +769,11 @@ async function main() {
             }
         ];
         for (const item of beverages) {
-            await prisma.item.create({ data: { ...item, categoryId: beveragesCategory.id } });
+            await prisma.item.upsert({
+                where: { slug: item.slug },
+                update: item,
+                create: { ...item, categoryId: beveragesCategory.id },
+            });
         }
     }
 
@@ -788,7 +805,11 @@ async function main() {
             }
         ];
         for (const item of desserts) {
-            await prisma.item.create({ data: { ...item, categoryId: dessertsCategory.id } });
+            await prisma.item.upsert({
+                where: { slug: item.slug },
+                update: item,
+                create: { ...item, categoryId: dessertsCategory.id },
+            });
         }
     }
 
@@ -820,7 +841,11 @@ async function main() {
             }
         ];
         for (const item of pastas) {
-            await prisma.item.create({ data: { ...item, categoryId: pastaCategory.id } });
+            await prisma.item.upsert({
+                where: { slug: item.slug },
+                update: item,
+                create: { ...item, categoryId: pastaCategory.id },
+            });
         }
     }
 
@@ -852,7 +877,11 @@ async function main() {
             }
         ];
         for (const item of newItems) {
-            await prisma.item.create({ data: { ...item, categoryId: newCategory.id } });
+            await prisma.item.upsert({
+                where: { slug: item.slug },
+                update: item,
+                create: { ...item, categoryId: newCategory.id },
+            });
         }
     }
 
