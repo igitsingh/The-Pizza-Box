@@ -85,9 +85,14 @@ export const getDashboardStats = async (req: Request, res: Response) => {
             newComplaints,
             newFeedbacks
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Get dashboard stats error:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({
+            message: 'Internal server error',
+            details: error.message,
+            code: error.code,
+            meta: error.meta
+        });
     }
 };
 
@@ -146,9 +151,14 @@ export const getSalesTrend = async (req: Request, res: Response) => {
         })).sort((a, b) => a.date.localeCompare(b.date));
 
         res.json(chartData);
-    } catch (error) {
+    } catch (error: any) {
         console.error('Get sales trend error:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({
+            message: 'Internal server error',
+            details: error.message,
+            code: error.code,
+            meta: error.meta
+        });
     }
 };
 
@@ -198,9 +208,14 @@ export const getTopItems = async (req: Request, res: Response) => {
             .sort((a, b) => b.soldCount - a.soldCount);
 
         res.json(topItems);
-    } catch (error) {
+    } catch (error: any) {
         console.error('Get top items error:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({
+            message: 'Internal server error',
+            details: error.message,
+            code: error.code,
+            meta: error.meta
+        });
     }
 };
 
@@ -219,8 +234,13 @@ export const getOrdersByStatus = async (req: Request, res: Response) => {
         }));
 
         res.json(formattedData);
-    } catch (error) {
+    } catch (error: any) {
         console.error('Get orders by status error:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({
+            message: 'Internal server error',
+            details: error.message,
+            code: error.code,
+            meta: error.meta
+        });
     }
 };
