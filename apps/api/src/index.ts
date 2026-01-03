@@ -104,6 +104,8 @@ import debugRoutes from './routes/debug.routes';
 app.use('/api/debug', debugRoutes);
 import repairRoutes from './routes/repair.routes';
 app.use('/api/repair-db-emergency', repairRoutes);
+import patchRoutes from './routes/patch.routes';
+app.use('/api/patch-db-emergency', patchRoutes);
 
 app.use('/api/complaints', complaintRoutes);
 
