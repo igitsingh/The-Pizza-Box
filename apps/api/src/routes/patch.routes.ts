@@ -29,32 +29,63 @@ router.post('/patch-user-table', async (req, res) => {
         await prisma.$executeRawUnsafe(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "otpExpiry" TIMESTAMP(3);`);
         log.push('User table patched.');
 
-        // 2. Order Table Patch (Critical for Dashboard)
-        // Adding columns one by one to avoid syntax errors if some exist
+        // 2. Order Table Patch
         const orderCols = [
             'ADD COLUMN IF NOT EXISTS "customerName" TEXT',
             'ADD COLUMN IF NOT EXISTS "customerPhone" TEXT',
             'ADD COLUMN IF NOT EXISTS "subtotal" DOUBLE PRECISION NOT NULL DEFAULT 0',
             'ADD COLUMN IF NOT EXISTS "tax" DOUBLE PRECISION NOT NULL DEFAULT 0',
             'ADD COLUMN IF NOT EXISTS "deliveryFee" DOUBLE PRECISION NOT NULL DEFAULT 0',
+            'ADD COLUMN IF NOT EXISTS "deliveryPartnerId" TEXT',
             'ADD COLUMN IF NOT EXISTS "discountAmount" DOUBLE PRECISION NOT NULL DEFAULT 0',
-            'ADD COLUMN IF NOT EXISTS "orderType" "OrderType" NOT NULL DEFAULT \'INSTANT\'',
-            // 'ADD COLUMN IF NOT EXISTS "orderNumber" SERIAL', // SERIAL cannot be added via ADD COLUMN IF NOT EXISTS easily in Postgres
+            'ADD COLUMN IF NOT EXISTS "guestAddress" JSONB',
+            'ADD COLUMN IF NOT EXISTS "instructions" TEXT',
+            'ADD COLUMN IF NOT EXISTS "invoiceGeneratedAt" TIMESTAMP(3)',
             'ADD COLUMN IF NOT EXISTS "invoiceNumber" TEXT',
+            'ADD COLUMN IF NOT EXISTS "isRepeated" BOOLEAN NOT NULL DEFAULT false',
+            'ADD COLUMN IF NOT EXISTS "repeatedFromOrderId" TEXT',
             'ADD COLUMN IF NOT EXISTS "scheduledFor" TIMESTAMP(3)',
-            'ADD COLUMN IF NOT EXISTS "instructions" TEXT'
+            'ADD COLUMN IF NOT EXISTS "taxBreakup" JSONB',
+            'ADD COLUMN IF NOT EXISTS "orderType" "OrderType" NOT NULL DEFAULT \'INSTANT\''
         ];
 
         for (const col of orderCols) {
             try {
                 await prisma.$executeRawUnsafe(`ALTER TABLE "Order" ${col};`);
             } catch (e: any) {
-                log.push(`Warning Order Mod: ${e.message}`);
+                log.push(`Warning Order Mod (${col}): ${e.message}`);
             }
         }
         log.push('Order table patched.');
 
-        // 3. Create Missing Tables if they don't exist
+        // DEBUG: Verify guestAddress specifically
+        const checkGuest = await prisma.$queryRawUnsafe(`SELECT column_name FROM information_schema.columns WHERE table_name='Order' AND column_name='guestAddress'`);
+        log.push(`DEBUG guestAddress check: ${JSON.stringify(checkGuest)}`);
+
+        // 3. Settings Table Patch
+        const settingsCols = [
+            'ADD COLUMN IF NOT EXISTS "closedMessage" TEXT',
+            'ADD COLUMN IF NOT EXISTS "emailEnabled" BOOLEAN NOT NULL DEFAULT false',
+            'ADD COLUMN IF NOT EXISTS "isPaused" BOOLEAN NOT NULL DEFAULT false',
+            'ADD COLUMN IF NOT EXISTS "notificationsEnabled" BOOLEAN NOT NULL DEFAULT true',
+            'ADD COLUMN IF NOT EXISTS "seoDescription" TEXT',
+            'ADD COLUMN IF NOT EXISTS "seoOgImage" TEXT',
+            'ADD COLUMN IF NOT EXISTS "seoTitle" TEXT',
+            'ADD COLUMN IF NOT EXISTS "smsEnabled" BOOLEAN NOT NULL DEFAULT false',
+            'ADD COLUMN IF NOT EXISTS "whatsappEnabled" BOOLEAN NOT NULL DEFAULT false'
+        ];
+        // Ensure Settings table exists first (it might be empty or missing)
+        // Usually it's there via basic migration, but columns might be missing.
+        for (const col of settingsCols) {
+            try {
+                await prisma.$executeRawUnsafe(`ALTER TABLE "Settings" ${col};`);
+            } catch (e: any) {
+                // Ignore if table doesn't exist, unlikely
+            }
+        }
+        log.push('Settings table patched.');
+
+        // 4. Create Missing Tables
 
         // Complaint
         await prisma.$executeRawUnsafe(`
