@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "prebuild": "npx prisma generate",
     "build": "tsc",
-    "start": "npm run db:resolve && npm run db:deploy && node dist/index.js",
+    "start": "npm run db:deploy && node dist/index.js",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "db:resolve": "npx prisma migrate resolve --applied 20251220101507_add_feedback_model || echo 'Nothing to resolve'",
     "db:deploy": "npx prisma migrate deploy && npx prisma db seed"

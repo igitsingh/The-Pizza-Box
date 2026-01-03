@@ -100,7 +100,7 @@ async function main() {
         }
     ];
 
-    const createdCategories = [];
+    const createdCategories: any[] = [];
     for (const cat of categories) {
         const upserted = await prisma.category.upsert({
             where: { slug: cat.slug },
