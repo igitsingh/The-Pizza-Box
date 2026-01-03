@@ -73,6 +73,21 @@ router.post('/patch-user-table', async (req, res) => {
         `);
         log.push('Feedback table check/create done.');
 
+        // Create Variant Table (Missing based on API Error)
+        await prisma.$executeRawUnsafe(`
+            CREATE TABLE IF NOT EXISTS "Variant" (
+                "id" TEXT NOT NULL,
+                "itemId" TEXT NOT NULL,
+                "type" TEXT NOT NULL,
+                "label" TEXT NOT NULL,
+                "price" DOUBLE PRECISION NOT NULL,
+                "isAvailable" BOOLEAN NOT NULL DEFAULT true,
+                CONSTRAINT "Variant_pkey" PRIMARY KEY ("id"),
+                CONSTRAINT "Variant_itemId_fkey" FOREIGN KEY ("itemId") REFERENCES "Item"("id") ON DELETE CASCADE ON UPDATE CASCADE
+            );
+        `);
+        log.push('Variant table check/create done.');
+
         res.json({ message: 'Comprehensive Patch Completed', log });
 
     } catch (error: any) {
