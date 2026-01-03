@@ -9,6 +9,21 @@ router.post('/patch-user-table', async (req, res) => {
         console.log('Starting Comprehensive Schema Patch...');
         const log: string[] = [];
 
+        // 0. Enum Patch (Prerequisites)
+        const enums = [
+            `DO $$ BEGIN CREATE TYPE "OrderType" AS ENUM ('INSTANT', 'SCHEDULED'); EXCEPTION WHEN duplicate_object THEN null; END $$;`,
+            `DO $$ BEGIN CREATE TYPE "ComplaintStatus" AS ENUM ('OPEN', 'IN_PROGRESS', 'RESOLVED'); EXCEPTION WHEN duplicate_object THEN null; END $$;`,
+            `DO $$ BEGIN CREATE TYPE "NotificationStatus" AS ENUM ('QUEUED', 'SENT', 'FAILED', 'SKIPPED'); EXCEPTION WHEN duplicate_object THEN null; END $$;`,
+            `DO $$ BEGIN CREATE TYPE "NotificationChannel" AS ENUM ('LOG', 'SMS', 'WHATSAPP', 'EMAIL'); EXCEPTION WHEN duplicate_object THEN null; END $$;`,
+            `DO $$ BEGIN CREATE TYPE "NotificationEvent" AS ENUM ('ORDER_PLACED', 'ORDER_ACCEPTED', 'ORDER_PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'SCHEDULED_ORDER_CONFIRMED'); EXCEPTION WHEN duplicate_object THEN null; END $$;`,
+            `DO $$ BEGIN CREATE TYPE "OrderStatus" AS ENUM ('SCHEDULED', 'PENDING', 'ACCEPTED', 'PREPARING', 'BAKING', 'READY_FOR_PICKUP', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'REFUNDED'); EXCEPTION WHEN duplicate_object THEN null; END $$;`
+        ];
+
+        for (const enumSql of enums) {
+            await prisma.$executeRawUnsafe(enumSql);
+        }
+        log.push('Enums patched.');
+
         // 1. User Table Patch (Confirmed working, but keeping for safety)
         await prisma.$executeRawUnsafe(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "otp" TEXT;`);
         await prisma.$executeRawUnsafe(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "otpExpiry" TIMESTAMP(3);`);
