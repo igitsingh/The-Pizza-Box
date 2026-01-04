@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient, OrderStatus } from '@prisma/client';
 import { getAllOrders as getAllOrdersUtil, getOrderCountsByStatus, ORDER_DETAIL_INCLUDE } from '../../utils/orderQueries';
+import { parseOrderStatus, isValidOrderStatus } from '../../constants/orderStatus';
 
 const prisma = new PrismaClient();
 
@@ -9,14 +10,26 @@ export const getAllOrders = async (req: Request, res: Response) => {
         const { status, startDate, endDate, userId } = req.query;
 
         const filters: any = {};
-        if (status) filters.status = status as OrderStatus;
+
+        // Validate and parse status if provided
+        if (status) {
+            const parsedStatus = parseOrderStatus(status as string);
+            if (!parsedStatus) {
+                return res.status(400).json({
+                    message: 'Invalid order status',
+                    validStatuses: ['PENDING', 'ACCEPTED', 'PREPARING', 'BAKING', 'READY_FOR_PICKUP', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'REFUNDED']
+                });
+            }
+            filters.status = parsedStatus;
+        }
+
         if (startDate) filters.startDate = new Date(startDate as string);
         if (endDate) filters.endDate = new Date(endDate as string);
         if (userId) filters.userId = userId as string;
 
         const orders = await getAllOrdersUtil(filters);
 
-        console.log(`[ORDERS] Fetched ${orders.length} orders with filters:`, filters);
+        console.log(`[ORDERS] Fetched ${orders.length} orders with filters: `, filters);
 
         res.json(orders);
     } catch (error: any) {
@@ -70,7 +83,7 @@ export const assignDeliveryPartner = async (req: Request, res: Response) => {
             data: { status: 'BUSY' },
         });
 
-        console.log(`[ORDER] ${id} assigned to partner ${deliveryPartnerId}`);
+        console.log(`[ORDER] ${id} assigned to partner ${deliveryPartnerId} `);
 
         res.json(order);
     } catch (error: any) {
@@ -123,7 +136,7 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
             });
         }
 
-        console.log(`[ORDER] ${id} status updated: ${currentOrder.status} → ${status}`);
+        console.log(`[ORDER] ${id} status updated: ${currentOrder.status} → ${status} `);
 
         res.json(order);
     } catch (error: any) {

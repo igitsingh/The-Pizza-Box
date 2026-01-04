@@ -1,4 +1,5 @@
 import { PrismaClient, OrderStatus, Prisma } from '@prisma/client';
+import { ORDER_STATUS, KITCHEN_STATUS_GROUPS } from '../constants/orderStatus';
 
 const prisma = new PrismaClient();
 
@@ -53,7 +54,7 @@ export const ORDER_LIST_INCLUDE: Prisma.OrderInclude = {
 export async function getPendingOrders() {
     return prisma.order.findMany({
         where: {
-            status: 'PENDING',
+            status: ORDER_STATUS.PENDING,
         },
         include: ORDER_LIST_INCLUDE,
         orderBy: {
@@ -70,7 +71,7 @@ export async function getKitchenOrders() {
     return prisma.order.findMany({
         where: {
             status: {
-                in: ['ACCEPTED', 'PREPARING', 'BAKING'],
+                in: [...KITCHEN_STATUS_GROUPS.KITCHEN],
             },
         },
         include: ORDER_LIST_INCLUDE,
@@ -86,7 +87,7 @@ export async function getKitchenOrders() {
 export async function getReadyOrders() {
     return prisma.order.findMany({
         where: {
-            status: 'READY_FOR_PICKUP',
+            status: ORDER_STATUS.READY_FOR_PICKUP,
         },
         include: ORDER_LIST_INCLUDE,
         orderBy: {
@@ -101,7 +102,7 @@ export async function getReadyOrders() {
 export async function getOutForDeliveryOrders() {
     return prisma.order.findMany({
         where: {
-            status: 'OUT_FOR_DELIVERY',
+            status: ORDER_STATUS.OUT_FOR_DELIVERY,
         },
         include: {
             ...ORDER_LIST_INCLUDE,
@@ -125,7 +126,7 @@ export async function getActiveOrders() {
     return prisma.order.findMany({
         where: {
             status: {
-                in: ['PENDING', 'ACCEPTED', 'PREPARING', 'BAKING', 'READY_FOR_PICKUP', 'OUT_FOR_DELIVERY'],
+                in: [...KITCHEN_STATUS_GROUPS.ACTIVE],
             },
         },
         include: ORDER_LIST_INCLUDE,
