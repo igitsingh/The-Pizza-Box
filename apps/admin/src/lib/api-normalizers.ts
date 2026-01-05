@@ -22,14 +22,15 @@ export interface DashboardStats {
 }
 
 export function normalizeDashboardStats(data: any): DashboardStats {
+    // ✅ FIXED: Map actual backend field names
     return {
-        totalSales: Number(data?.totalSales) || 0,
-        pending: Number(data?.pending) || 0,
-        preparing: Number(data?.preparing) || 0,
-        onDelivery: Number(data?.onDelivery) || 0,
-        lowStock: Number(data?.lowStock) || 0,
-        complaints: Number(data?.complaints) || 0,
-        feedbacks: Number(data?.feedbacks) || 0,
+        totalSales: Number(data?.totalSalesToday) || 0,        // backend: totalSalesToday
+        pending: Number(data?.pendingOrders) || 0,             // backend: pendingOrders
+        preparing: Number(data?.preparingOrders) || 0,         // backend: preparingOrders
+        onDelivery: Number(data?.outForDeliveryOrders) || 0,   // backend: outForDeliveryOrders
+        lowStock: Number(data?.lowStockItems) || 0,            // backend: lowStockItems
+        complaints: Number(data?.newComplaints) || 0,          // backend: newComplaints
+        feedbacks: Number(data?.newFeedbacks) || 0,            // backend: newFeedbacks
     };
 }
 
