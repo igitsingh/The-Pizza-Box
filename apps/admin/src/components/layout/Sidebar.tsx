@@ -28,6 +28,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import api from "@/lib/api"
+import { logout } from "@/lib/auth" // ✅ ADDED: Production-safe logout
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
@@ -157,15 +158,11 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         return () => clearInterval(interval)
     }, [])
 
+    // ✅ FIXED: Frontend-authoritative logout - ALWAYS succeeds
     const handleLogout = async () => {
-        try {
-            await api.post("/auth/logout")
-            localStorage.removeItem("admin_token")
-            router.push("/login")
-            toast.success("Logged out successfully")
-        } catch (error) {
-            toast.error("Failed to logout")
-        }
+        toast.info("Logging out...");
+        await logout(api); // Clears auth, tries API, redirects - NEVER fails
+        // Note: redirect happens in logout(), this code won't execute
     }
 
     return (
