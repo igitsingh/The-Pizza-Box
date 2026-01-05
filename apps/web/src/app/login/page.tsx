@@ -102,6 +102,29 @@ export default function AuthPage() {
         }
     };
 
+    // Quick Login with Test Account
+    const handleQuickLogin = async (accountNum: number) => {
+        try {
+            setLoading(true);
+            const email = `test${accountNum}@thepizzabox.com`;
+            const password = 'test123';
+
+            const res = await api.post('/auth/login', { email, password });
+
+            localStorage.setItem('token', res.data.token);
+            setUser(res.data.user);
+
+            toast.success(`✅ Logged in as Test Customer ${accountNum}!`);
+
+            const redirectTo = new URLSearchParams(window.location.search).get('redirect') || '/';
+            router.push(redirectTo);
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || 'Login failed');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50 flex items-center justify-center p-4">
             <div className="w-full max-w-md">
@@ -235,23 +258,29 @@ export default function AuthPage() {
                         </form>
                     )}
 
-                    {/* Development Helper */}
-                    <div className="mt-6 pt-6 border-t border-dashed text-center">
-                        <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-2 font-bold">Development Helper</p>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="w-full border-dashed border-orange-200 hover:bg-orange-50 hover:text-orange-600 transition-all text-xs"
-                            onClick={() => {
-                                setPhone('9999999999');
-                                setStep('otp');
-                                setOtp('123456');
-                                toast.info('Filled Test Account! (Magic OTP: 123456)');
-                            }}
-                        >
-                            ⚡ Autofill Test Account
-                        </Button>
+                    {/* 10 Test Account Buttons */}
+                    <div className="mt-6 pt-6 border-t border-dashed">
+                        <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-3 font-bold text-center">
+                            🎯 Demo Accounts - Click to Login
+                        </p>
+                        <div className="grid grid-cols-5 gap-2">
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                                <Button
+                                    key={num}
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="border-dashed border-orange-200 hover:bg-orange-50 hover:text-orange-600 transition-all text-xs h-10"
+                                    onClick={() => handleQuickLogin(num)}
+                                    disabled={loading}
+                                >
+                                    Test {num}
+                                </Button>
+                            ))}
+                        </div>
+                        <p className="text-[9px] text-gray-400 mt-2 text-center">
+                            Each account has unique addresses & order history
+                        </p>
                     </div>
                 </div>
 
@@ -277,7 +306,7 @@ export default function AuthPage() {
                         </li>
                     </ul>
                 </div>
-            </div >
-        </div >
+            </div>
+        </div>
     );
 }
