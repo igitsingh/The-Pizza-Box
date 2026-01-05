@@ -12,6 +12,7 @@ const signupSchema = z.object({
 
 const loginSchema = z.object({
     identifier: z.string().optional(),
+    email: z.string().optional(), // Frontend sends email
     password: z.string().optional(),
     phone: z.string().optional(),
 });
@@ -55,19 +56,20 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
 
 export const login = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { identifier, password } = loginSchema.parse(req.body);
+        const { identifier, email, password } = loginSchema.parse(req.body);
 
 
         // Check if identifier is email or phone
+        const loginIdentifier = email || identifier;
 
         let user;
-        if (identifier) {
-            const isEmail = identifier.includes('@');
+        if (loginIdentifier) {
+            const isEmail = loginIdentifier.includes('@');
             if (isEmail) {
-                user = await prisma.user.findUnique({ where: { email: identifier } });
+                user = await prisma.user.findUnique({ where: { email: loginIdentifier } });
             } else {
                 // Assuming phone is unique. If not defined as unique in schema, findFirst
-                user = await prisma.user.findFirst({ where: { phone: identifier } });
+                user = await prisma.user.findFirst({ where: { phone: loginIdentifier } });
             }
         }
 
