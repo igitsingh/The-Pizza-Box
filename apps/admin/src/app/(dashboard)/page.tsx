@@ -35,7 +35,7 @@ export default function DashboardPage() {
             try {
                 const [statsRes, trendRes, topItemsRes] = await Promise.all([
                     api.get('/admin/metrics/stats'),
-                    api.get(`/metrics/sales-trend?range=${timeRange}`),
+                    api.get(`/admin/metrics/sales-trend?range=${timeRange}`),
                     api.get('/admin/metrics/top-items')
                 ]);
 
