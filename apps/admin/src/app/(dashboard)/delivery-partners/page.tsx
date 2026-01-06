@@ -41,12 +41,22 @@ export default function DeliveryPartnersPage() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [selectedPartner, setSelectedPartner] = useState<DeliveryPartner | null>(null);
     const [newPartner, setNewPartner] = useState({
         name: '',
         phone: '',
         email: '',
         vehicleType: 'BIKE',
         vehicleNumber: '',
+    });
+    const [editPartner, setEditPartner] = useState({
+        name: '',
+        phone: '',
+        email: '',
+        vehicleType: '',
+        vehicleNumber: '',
+        status: 'ACTIVE' as 'ACTIVE' | 'INACTIVE' | 'BUSY',
     });
 
     const fetchPartners = async () => {
@@ -81,6 +91,33 @@ export default function DeliveryPartnersPage() {
         } catch (error) {
             console.error('Failed to create partner:', error);
             toast.error('Failed to create delivery partner');
+        }
+    };
+
+    const handleOpenEdit = (partner: DeliveryPartner) => {
+        setSelectedPartner(partner);
+        setEditPartner({
+            name: partner.name,
+            phone: partner.phone,
+            email: partner.email || '',
+            vehicleType: partner.vehicleType || '',
+            vehicleNumber: partner.vehicleNumber || '',
+            status: partner.status,
+        });
+        setIsEditDialogOpen(true);
+    };
+
+    const handleUpdatePartner = async () => {
+        if (!selectedPartner) return;
+        try {
+            await api.put(`/admin/delivery-partners/${selectedPartner.id}`, editPartner);
+            toast.success('Delivery partner updated successfully');
+            setIsEditDialogOpen(false);
+            setSelectedPartner(null);
+            fetchPartners();
+        } catch (error) {
+            console.error('Failed to update partner:', error);
+            toast.error('Failed to update delivery partner');
         }
     };
 
@@ -161,6 +198,79 @@ export default function DeliveryPartnersPage() {
                 </Dialog>
             </div>
 
+            {/* Edit Dialog */}
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Edit Delivery Partner</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="edit-name" className="text-right">Name</Label>
+                            <Input
+                                id="edit-name"
+                                value={editPartner.name}
+                                onChange={(e) => setEditPartner({ ...editPartner, name: e.target.value })}
+                                className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="edit-phone" className="text-right">Phone</Label>
+                            <Input
+                                id="edit-phone"
+                                value={editPartner.phone}
+                                onChange={(e) => setEditPartner({ ...editPartner, phone: e.target.value })}
+                                className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="edit-email" className="text-right">Email</Label>
+                            <Input
+                                id="edit-email"
+                                value={editPartner.email}
+                                onChange={(e) => setEditPartner({ ...editPartner, email: e.target.value })}
+                                className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="edit-vehicleType" className="text-right">Vehicle Type</Label>
+                            <Input
+                                id="edit-vehicleType"
+                                value={editPartner.vehicleType}
+                                onChange={(e) => setEditPartner({ ...editPartner, vehicleType: e.target.value })}
+                                className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="edit-vehicleNumber" className="text-right">Vehicle No.</Label>
+                            <Input
+                                id="edit-vehicleNumber"
+                                value={editPartner.vehicleNumber}
+                                onChange={(e) => setEditPartner({ ...editPartner, vehicleNumber: e.target.value })}
+                                className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="edit-status" className="text-right">Status</Label>
+                            <select
+                                id="edit-status"
+                                value={editPartner.status}
+                                onChange={(e) => setEditPartner({ ...editPartner, status: e.target.value as 'ACTIVE' | 'INACTIVE' | 'BUSY' })}
+                                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            >
+                                <option value="ACTIVE">Active</option>
+                                <option value="BUSY">Busy</option>
+                                <option value="INACTIVE">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
+                        <Button onClick={handleUpdatePartner} className="bg-orange-600 hover:bg-orange-700">Update Partner</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
             <div className="flex items-center gap-4 mb-6">
                 <div className="relative flex-1 max-w-sm">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -233,7 +343,7 @@ export default function DeliveryPartnersPage() {
                                         )}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <Button variant="ghost" size="sm">Edit</Button>
+                                        <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(partner)}>Edit</Button>
                                     </TableCell>
                                 </TableRow>
                             ))
