@@ -473,7 +473,14 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
                 res.status(400).json({ message: error.message });
             } else {
                 console.error('Create order error:', error);
-                res.status(500).json({ message: 'Internal server error' });
+                // @ts-ignore
+                const errorMessage = error.message || 'Internal server error';
+                // @ts-ignore
+                const errorDetails = process.env.NODE_ENV === 'production' ? {} : { error: error.stack };
+                res.status(500).json({
+                    message: errorMessage,
+                    ...errorDetails
+                });
             }
         }
     }
