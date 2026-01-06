@@ -5,15 +5,15 @@ export const getMenu = async (req: Request, res: Response): Promise<void> => {
     try {
         const categories = await prisma.category.findMany({
             include: {
-                items: {
+                Item: {
                     include: {
-                        options: {
+                        Option: {
                             include: {
-                                choices: true,
+                                Choice: true,
                             },
                         },
-                        addons: true,
-                        variants: true,
+                        Addon: true,
+                        Variant: true,
                     },
                 },
             },
@@ -34,13 +34,13 @@ export const getItem = async (req: Request, res: Response): Promise<void> => {
         const item = await prisma.item.findUnique({
             where: { id },
             include: {
-                options: {
+                Option: {
                     include: {
-                        choices: true,
+                        Choice: true,
                     },
                 },
-                addons: true,
-                variants: true,
+                Addon: true,
+                Variant: true,
             },
         });
 
@@ -65,15 +65,15 @@ export const getCategoryBySlug = async (req: Request, res: Response): Promise<vo
         const category = await prisma.category.findUnique({
             where: { slug },
             include: {
-                items: {
+                Item: {
                     include: {
-                        options: {
+                        Option: {
                             include: {
-                                choices: true,
+                                Choice: true,
                             },
                         },
-                        addons: true,
-                        variants: true,
+                        Addon: true,
+                        Variant: true,
                     },
                 },
             },
