@@ -3,6 +3,7 @@ import prisma from '../config/db';
 import { z } from 'zod';
 import { getIO } from '../socket';
 import { verifyPaymentSignature } from './payment.controller';
+import { transformOrder } from '../utils/transform';
 
 const createOrderSchema = z.object({
     items: z.array(
@@ -193,7 +194,7 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
                 where: { id: item.itemId },
                 include: {
                     Variant: true,
-                    addons: true
+                    ItemAddon: true
                 }
             });
 
@@ -218,7 +219,7 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
             let variantsPrice = 0;
             if (item.variants && typeof item.variants === 'object') {
                 Object.values(item.variants).forEach((v: any) => {
-                    const dbVariant = product.variants.find(dbV => dbV.id === v.id);
+                    const dbVariant = product.Variant.find(dbV => dbV.id === v.id);
                     if (dbVariant) {
                         variantsPrice += dbVariant.price;
                     }
@@ -232,8 +233,7 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
             // 2. Addons
             if (item.addons && Array.isArray(item.addons)) {
                 item.addons.forEach((addon: any) => {
-                    // @ts-ignore
-                    const dbAddon = (product as any).addons?.find((a: any) => a.id === addon.id);
+                    const dbAddon = product.ItemAddon?.find((a: any) => a.id === addon.id);
                     if (dbAddon) {
                         itemPrice += dbAddon.price;
                     }
@@ -397,7 +397,7 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
                     invoiceGeneratedAt: new Date(),
                     couponCode: appliedCouponCode,
                     discountAmount: discountAmount,
-                    items: {
+                    OrderItem: {
                         create: secureItems.map((item) => ({
                             itemId: item.itemId,
                             name: item.name,
@@ -410,8 +410,8 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
                     },
                 },
                 include: {
-                    items: true,
-                    user: true,
+                    OrderItem: true,
+                    User: true,
                 },
             });
 
@@ -430,7 +430,7 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
             const updatedOrder = await tx.order.update({
                 where: { id: order.id },
                 data: { invoiceNumber },
-                include: { Item: true, User: true }
+                include: { OrderItem: true, User: true }
             });
 
             return updatedOrder;
@@ -462,7 +462,7 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
             });
         }
 
-        res.status(201).json(order);
+        res.status(201).json(transformOrder(order));
     } catch (error) {
         if (error instanceof z.ZodError) {
             res.status(400).json({ errors: error.issues });
@@ -498,7 +498,7 @@ export const getMyOrders = async (req: Request, res: Response): Promise<void> =>
         const orders = await prisma.order.findMany({
             where: { userId },
             include: {
-                items: true,
+                OrderItem: true,
             },
             orderBy: { createdAt: 'desc' },
         });
@@ -526,7 +526,7 @@ export const lookupOrder = async (req: Request, res: Response): Promise<void> =>
                 customerPhone: phone
             },
             include: {
-                items: true,
+                OrderItem: true,
             }
         });
 
@@ -552,9 +552,9 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
 
         const orders = await (prisma as any).order.findMany({
             include: {
-                items: true,
-                user: true,
-                deliveryPartner: true
+                OrderItem: true,
+                User: true,
+                DeliveryPartner: true
             },
             orderBy: { createdAt: 'desc' },
         });
