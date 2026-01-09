@@ -249,7 +249,8 @@ export default function OrdersPage() {
 
         let matchesStatus = false
         if (statusFilter === "ACTIVE") {
-            matchesStatus = order.status !== "DELIVERED" && order.status !== "CANCELLED" && order.status !== "PENDING"
+            // ACTIVE means all orders that are not DELIVERED or CANCELLED
+            matchesStatus = order.status !== "DELIVERED" && order.status !== "CANCELLED"
         } else if (statusFilter === "ALL") {
             matchesStatus = true
         } else {
