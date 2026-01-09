@@ -29,7 +29,7 @@ export const createItem = async (req: Request, res: Response) => {
                 } : undefined
             },
             include: {
-                variants: true
+                Variant: true
             }
         });
 
@@ -74,7 +74,7 @@ export const updateItem = async (req: Request, res: Response) => {
                 } : undefined
             },
             include: {
-                variants: true
+                Variant: true
             }
         });
 
@@ -105,7 +105,7 @@ export const getAllItems = async (req: Request, res: Response) => {
         const items = await (prisma as any).item.findMany({
             include: {
                 category: true,
-                variants: true
+                Variant: true
             },
             orderBy: {
                 createdAt: 'desc',

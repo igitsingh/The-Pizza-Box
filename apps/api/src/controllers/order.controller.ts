@@ -192,7 +192,7 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
             const product = await prisma.item.findUnique({
                 where: { id: item.itemId },
                 include: {
-                    variants: true,
+                    Variant: true,
                     addons: true
                 }
             });
