@@ -409,10 +409,6 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
                         })),
                     },
                 },
-                include: {
-                    OrderItem: true,
-                    User: true,
-                },
             });
 
             // 2. Increment Coupon Usage
