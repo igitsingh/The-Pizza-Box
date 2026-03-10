@@ -38,6 +38,7 @@ const Footer = () => {
                             <li><a href="/menu" className="hover:text-white">Order Online</a></li>
                             <li><a href="/menu" className="hover:text-white">Veg Pizza Menu</a></li>
                             <li><a href="/orders" className="hover:text-white">Track Order</a></li>
+                            <li><a href="/franchise" className="hover:text-white">Franchise</a></li>
                         </ul>
                     </div>
                     <div>
