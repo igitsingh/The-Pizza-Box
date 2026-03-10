@@ -520,7 +520,7 @@ export const getMyOrders = async (req: Request, res: Response): Promise<void> =>
             orderBy: { createdAt: 'desc' },
         });
 
-        res.json(orders);
+        res.json(orders.map(transformOrder));
     } catch (error) {
         res.status(500).json({ message: 'Internal server error' });
     }
@@ -552,7 +552,7 @@ export const lookupOrder = async (req: Request, res: Response): Promise<void> =>
             return;
         }
 
-        res.json(order);
+        res.json(transformOrder(order));
     } catch (error) {
         res.status(500).json({ message: 'Internal server error' });
     }
@@ -575,7 +575,7 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
             },
             orderBy: { createdAt: 'desc' },
         });
-        res.json(orders);
+        res.json(orders.map(transformOrder));
     } catch (error) {
         res.status(500).json({ message: 'Internal server error' });
     }
@@ -591,7 +591,7 @@ export const getOrder = async (req: Request, res: Response): Promise<void> => {
 
         const order = await (prisma as any).order.findUnique({
             where: { id },
-            include: { Item: true, User: true },
+            include: { OrderItem: true, User: true },
         });
 
         if (!order) {
@@ -604,7 +604,7 @@ export const getOrder = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
-        res.json(order);
+        res.json(transformOrder(order));
     } catch (error) {
         res.status(500).json({ message: 'Internal server error' });
     }

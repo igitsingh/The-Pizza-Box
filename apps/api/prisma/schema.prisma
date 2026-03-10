@@ -153,9 +153,9 @@ model Order {
   addressId         String?
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
-  address           Address?         @relation(fields: [addressId], references: [id])
-  deliveryPartner   DeliveryPartner? @relation(fields: [deliveryPartnerId], references: [id])
-  user              User?            @relation(fields: [userId], references: [id])
+  Address           Address?         @relation(fields: [addressId], references: [id])
+  DeliveryPartner   DeliveryPartner? @relation(fields: [deliveryPartnerId], references: [id])
+  User              User?            @relation(fields: [userId], references: [id])
   OrderItem          OrderItem[]
   Refund             Refund?
   guestAddress       Json?            // For Guest orders: { street, city, zip }
