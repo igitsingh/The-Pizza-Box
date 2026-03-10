@@ -58,9 +58,6 @@ const Footer = () => {
                         <p className="text-xs font-bold tracking-widest uppercase text-gray-600">
                             <span style={{ color: '#f20707' }}>HOUSE OF FLOYDS</span> CREATION
                         </p>
-                        <p className="text-[10px] text-gray-600 uppercase tracking-wider">
-                            BUILT IN MEERUT 🇮🇳
-                        </p>
                     </div>
                 </div>
             </div>
