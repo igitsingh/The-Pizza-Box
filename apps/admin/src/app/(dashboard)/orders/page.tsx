@@ -87,7 +87,7 @@ type Order = {
 type DeliveryPartner = {
     id: string
     name: string
-    status: "AVAILABLE" | "BUSY" | "OFFLINE"
+    status: "ACTIVE" | "BUSY" | "INACTIVE"
 }
 
 const ORDER_STATUSES = [
@@ -798,7 +798,7 @@ export default function OrdersPage() {
                                     <SelectItem
                                         key={partner.id}
                                         value={partner.id}
-                                        disabled={partner.status !== "AVAILABLE"}
+                                        disabled={partner.status !== "ACTIVE"}
                                     >
                                         {partner.name} ({partner.status})
                                     </SelectItem>

@@ -32,11 +32,11 @@ model User {
   membershipPoints  Int       @default(0)
   lifetimeSpending  Float     @default(0)
   
-  addresses  Address[]
-  complaints Complaint[]
-  orders     Order[]
-  feedbacks  Feedback[]
-  assignedEnquiries Enquiry[]
+  Address  Address[]
+  Complaint Complaint[]
+  Order     Order[]
+  Feedback  Feedback[]
+  Enquiry   Enquiry[]
   referrer   User?     @relation("Referrals", fields: [referredBy], references: [id])
   referrals  User[]    @relation("Referrals")
   referrerTransactions ReferralTransaction[] @relation("ReferrerTransactions")
@@ -61,7 +61,7 @@ model Category {
   image          String?
   seoTitle       String?
   seoDescription String?
-  items          Item[]
+  Item           Item[]
 }
 
 model Item {
@@ -83,10 +83,10 @@ model Item {
   isStockManaged Boolean      @default(false)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
-  variants       Variant[]
+  Variant        Variant[]
   category       Category     @relation(fields: [categoryId], references: [id])
-  addons         ItemAddon[]
-  options        ItemOption[]
+  ItemAddon      ItemAddon[]
+  ItemOption     ItemOption[]
 }
 
 model Variant {
@@ -115,7 +115,7 @@ model ItemOption {
   itemId  String
   name    String
   item    Item           @relation(fields: [itemId], references: [id])
-  choices OptionChoice[]
+  OptionChoice OptionChoice[]
 }
 
 model OptionChoice {
@@ -153,23 +153,23 @@ model Order {
   addressId         String?
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
-  address           Address?         @relation(fields: [addressId], references: [id])
-  deliveryPartner   DeliveryPartner? @relation(fields: [deliveryPartnerId], references: [id])
-  user              User?            @relation(fields: [userId], references: [id])
-  items             OrderItem[]
-  refund            Refund?
-  guestAddress      Json?            // For Guest orders: { street, city, zip }
-  isRepeated        Boolean          @default(false)
+  Address           Address?         @relation(fields: [addressId], references: [id])
+  DeliveryPartner   DeliveryPartner? @relation(fields: [deliveryPartnerId], references: [id])
+  User              User?            @relation(fields: [userId], references: [id])
+  OrderItem          OrderItem[]
+  Refund             Refund?
+  guestAddress       Json?            // For Guest orders: { street, city, zip }
+  isRepeated         Boolean          @default(false)
   repeatedFromOrderId String?
-  scheduledFor      DateTime?
-  orderType         OrderType        @default(INSTANT)
-  notifications     NotificationLog[]
-  taxBreakup        Json?
-  invoiceNumber     String?          @unique
+  scheduledFor       DateTime?
+  orderType          OrderType        @default(INSTANT)
+  NotificationLog    NotificationLog[]
+  taxBreakup         Json?
+  invoiceNumber      String?          @unique
   invoiceGeneratedAt DateTime?
-  couponCode        String?
-  discountAmount    Float            @default(0)
-  feedback          Feedback?
+  couponCode         String?
+  discountAmount     Float            @default(0)
+  Feedback           Feedback?
 }
 
 model OrderItem {
@@ -182,7 +182,7 @@ model OrderItem {
   options  Json?
   addons   Json?
   variants Json? // To store selected variants: [{type: 'SIZE', label: 'Medium', price: 100}]
-  order    Order  @relation(fields: [orderId], references: [id])
+  Order    Order  @relation(fields: [orderId], references: [id])
 }
 
 model DeliveryPartner {
@@ -193,7 +193,7 @@ model DeliveryPartner {
   vehicleType     String?
   vehicleNumber   String?
   currentLocation String?
-  status          String   @default("AVAILABLE")
+  status          String   @default("ACTIVE")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   orders          Order[]

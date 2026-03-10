@@ -133,7 +133,7 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
         if (status === 'DELIVERED' && order.deliveryPartnerId) {
             await prisma.deliveryPartner.update({
                 where: { id: order.deliveryPartnerId },
-                data: { status: 'AVAILABLE' },
+                data: { status: 'ACTIVE' },
             });
         }
 
