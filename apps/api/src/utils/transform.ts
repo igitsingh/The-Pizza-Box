@@ -26,8 +26,9 @@ export const transformCategory = (category: any) => {
 
     return {
         ...category,
-        items: category.Item?.map(transformItem) || [],
-        Item: undefined
+        items: (category.items || category.Item)?.map(transformItem) || [],
+        Item: undefined,
+        items_prisma: undefined // cleanup if needed
     };
 };
 

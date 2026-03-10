@@ -61,7 +61,7 @@ model Category {
   image          String?
   seoTitle       String?
   seoDescription String?
-  items          Item[]
+  Item           Item[]
 }
 
 model Item {
@@ -83,10 +83,10 @@ model Item {
   isStockManaged Boolean      @default(false)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
-  variants       Variant[]
+  Variant        Variant[]
   category       Category     @relation(fields: [categoryId], references: [id])
-  addons         ItemAddon[]
-  options        ItemOption[]
+  ItemAddon      ItemAddon[]
+  ItemOption     ItemOption[]
 }
 
 model Variant {
@@ -115,7 +115,7 @@ model ItemOption {
   itemId  String
   name    String
   item    Item           @relation(fields: [itemId], references: [id])
-  choices OptionChoice[]
+  OptionChoice OptionChoice[]
 }
 
 model OptionChoice {
