@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../config/db';
 import { z } from 'zod';
+import { randomUUID } from 'crypto';
 import { getIO } from '../socket';
 import { verifyPaymentSignature } from './payment.controller';
 import { transformOrder } from '../utils/transform';
@@ -89,7 +90,25 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
     try {
         // @ts-ignore
         const userId = req.user?.userId;
-        const { items, total, addressId, customerName, customerPhone, paymentMethod, paymentDetails, scheduledFor, orderType, couponCode, guestAddress } = createOrderSchema.parse(req.body);
+        const { items, total, addressId, paymentMethod, paymentDetails, scheduledFor, orderType, couponCode, guestAddress } = createOrderSchema.parse(req.body);
+
+        let finalCustomerName = req.body.customerName;
+        let finalCustomerPhone = req.body.customerPhone;
+
+        // Trace and Populate Customer Identity
+        if (userId) {
+            const user = await prisma.user.findUnique({ where: { id: userId } });
+            if (user) {
+                finalCustomerName = user.name;
+                finalCustomerPhone = user.phone;
+            }
+        }
+
+        // Integrity Check for Guests
+        if (!userId && (!finalCustomerName || !finalCustomerPhone || !guestAddress)) {
+            res.status(400).json({ message: 'Guest orders require name, phone, and address details.' });
+            return;
+        }
 
         // ---------------------------------------------------------
         // BLOCKER 0: STORE STATUS CHECK
@@ -379,9 +398,10 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
             // 1. Create Order
             const order = await tx.order.create({
                 data: {
+                    id: randomUUID(),
                     userId,
-                    customerName,
-                    customerPhone,
+                    customerName: finalCustomerName,
+                    customerPhone: finalCustomerPhone,
                     total: finalTotal,
                     subtotal: subtotal,
                     tax: totalTax,
@@ -399,6 +419,7 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
                     discountAmount: discountAmount,
                     OrderItem: {
                         create: secureItems.map((item) => ({
+                            id: randomUUID(),
                             itemId: item.itemId,
                             name: item.name,
                             price: item.price,

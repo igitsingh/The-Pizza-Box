@@ -5,42 +5,53 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import { createServer } from 'http';
-import { Server } from 'socket.io';
 
 dotenv.config();
 
-import { initSocket, getIO } from './socket';
+import { initSocket } from './socket';
 
 const app = express();
 const httpServer = createServer(app);
 const io = initSocket(httpServer);
 
+// Route Imports - Main
 import authRoutes from './routes/auth.routes';
 import menuRoutes from './routes/menu.routes';
 import orderRoutes from './routes/order.routes';
 import userRoutes from './routes/user.routes';
-import adminRoutes from './routes/admin.routes';
-import adminAuthRoutes from './routes/admin/auth.routes';
-import adminMenuRoutes from './routes/admin/menu.routes';
-import adminCategoryRoutes from './routes/admin/category.routes';
-import adminOrderRoutes from './routes/admin/order.routes';
-import adminCouponRoutes from './routes/admin/coupon.routes';
-import adminUserRoutes from './routes/admin/user.routes';
-import adminSettingsRoutes from './routes/admin/settings.routes';
 import locationRoutes from './routes/location.routes';
 import paymentRoutes from './routes/payment.routes';
 import settingsRoutes from './routes/settings.routes';
 import couponRoutes from './routes/coupon.routes';
 import feedbackRoutes from './routes/feedback.routes';
-import adminFeedbackRoutes from './routes/admin/feedback.routes';
 import enquiryRoutes from './routes/enquiry.routes';
-import adminEnquiryRoutes from './routes/admin/enquiry.routes';
 import referralRoutes from './routes/referral.routes';
 import membershipRoutes from './routes/membership.routes';
+import complaintRoutes from './routes/complaint.routes';
+import adminRoutes from './routes/admin.routes';
 import otpRoutes from './routes/otp.routes';
+
+// Route Imports - Admin Modular
+import { setupOrderSockets } from './sockets/order.socket';
+import adminAuthRoutes from './routes/admin/auth.routes';
+import adminMenuRoutes from './routes/admin/menu.routes';
+import adminCategoryRoutes from './routes/admin/category.routes';
+import adminOrderRoutes from './routes/admin/order.routes';
+import adminKitchenRoutes from './routes/admin/kitchen.routes';
+import adminCouponRoutes from './routes/admin/coupon.routes';
+import adminUserRoutes from './routes/admin/user.routes';
+import adminSettingsRoutes from './routes/admin/settings.routes';
+import adminFeedbackRoutes from './routes/admin/feedback.routes';
+import adminEnquiryRoutes from './routes/admin/enquiry.routes';
 import adminReferralRoutes from './routes/admin/referral.routes';
 import adminMembershipRoutes from './routes/admin/membership.routes';
-import complaintRoutes from './routes/complaint.routes';
+import adminDeliveryPartnerRoutes from './routes/admin/delivery-partner.routes';
+import adminAnalyticsRoutes from './routes/admin/analytics.routes';
+import adminStockRoutes from './routes/admin/stock.routes';
+import adminPaymentRoutes from './routes/admin/payment.routes';
+import adminComplaintRoutes from './routes/admin/complaint.routes';
+import adminReportsRoutes from './routes/admin/reports.routes';
+import adminLocationRoutes from './routes/admin/location.routes';
 
 // Middleware
 app.use(express.json({
@@ -54,31 +65,33 @@ app.use(express.json({
 }));
 app.use(cookieParser());
 app.use(cors({
-    origin: true, // Allow any origin
+    origin: true,
     credentials: true,
 }));
 app.use(helmet());
 app.use(morgan('dev'));
 
-import adminDeliveryPartnerRoutes from './routes/admin/delivery-partner.routes';
-import adminAnalyticsRoutes from './routes/admin/analytics.routes';
-import adminStockRoutes from './routes/admin/stock.routes';
-import adminPaymentRoutes from './routes/admin/payment.routes';
-import adminComplaintRoutes from './routes/admin/complaint.routes';
-import adminReportsRoutes from './routes/admin/reports.routes';
-import adminLocationRoutes from './routes/admin/location.routes';
-import adminKitchenRoutes from './routes/admin/kitchen.routes';
-import adminResetRoutes from './routes/admin-reset.routes'; // TEMPORARY - for password reset
-import testAccountsRoutes from './routes/test-accounts.routes'; // TEMPORARY - for test accounts
-import deliveryZonesRoutes from './routes/delivery-zones.routes'; // TEMPORARY - for delivery zones
-import fixSchemaRoutes from './routes/fix-schema.routes'; // TEMPORARY - for schema fixes
-import createAdminRoutes from './routes/create-admin.routes'; // TEMPORARY - for creating admin
+// --- API ROUTES ---
 
-// Routes
+// Auth & Core
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+
+// Customer Facing
 app.use('/api/menu', menuRoutes);
 app.use('/api/orders', orderRoutes);
-app.use('/api/users', userRoutes);
+app.use('/api/locations', locationRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/coupons', couponRoutes);
+app.use('/api/feedback', feedbackRoutes);
+app.use('/api/enquiry', enquiryRoutes);
+app.use('/api/referral', referralRoutes);
+app.use('/api/membership', membershipRoutes);
+app.use('/api/complaints', complaintRoutes);
+app.use('/api/otp', otpRoutes);
+
+// Admin Modular (Secured)
 app.use('/api/admin/auth', adminAuthRoutes);
 app.use('/api/admin/menu', adminMenuRoutes);
 app.use('/api/admin/categories', adminCategoryRoutes);
@@ -98,52 +111,27 @@ app.use('/api/admin/reports', adminReportsRoutes);
 app.use('/api/admin/referrals', adminReferralRoutes);
 app.use('/api/admin/memberships', adminMembershipRoutes);
 app.use('/api/admin/locations', adminLocationRoutes);
-app.use('/api/admin-reset', adminResetRoutes); // TEMPORARY - for password reset
-app.use('/api/test-accounts', testAccountsRoutes); // TEMPORARY - for test accounts
-app.use('/api/delivery-zones', deliveryZonesRoutes); // TEMPORARY - for delivery zones
-app.use('/api/fix-schema', fixSchemaRoutes); // TEMPORARY - for schema fixes
-app.use('/api/create-admin', createAdminRoutes); // TEMPORARY - for creating admin
+
+// Legacy Admin Bridge
 app.use('/api/admin', adminRoutes);
-app.use('/api/locations', locationRoutes);
-app.use('/api/settings', settingsRoutes);
-app.use('/api/payments', paymentRoutes);
-app.use('/api/coupons', couponRoutes);
-app.use('/api/feedback', feedbackRoutes);
-app.use('/api/enquiry', enquiryRoutes);
-app.use('/api/referral', referralRoutes);
-app.use('/api/membership', membershipRoutes);
-import debugRoutes from './routes/debug.routes';
-app.use('/api/debug', debugRoutes);
-import repairRoutes from './routes/repair.routes';
-app.use('/api/repair-db-emergency', repairRoutes);
-import patchRoutes from './routes/patch.routes';
-app.use('/api/patch-db-emergency', patchRoutes);
 
-app.use('/api/complaints', complaintRoutes);
-
-// Basic Route
+// Root
 app.get('/', (req, res) => {
     res.json({ message: 'Welcome to The Pizza Box API' });
 });
 
-import { setupOrderSockets } from './sockets/order.socket';
-
-// Socket.io connection
+// --- SOCKETS ---
 setupOrderSockets(io);
 
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
-
     socket.on('disconnect', () => {
         console.log('User disconnected:', socket.id);
     });
 });
 
 const PORT = process.env.PORT || 5001;
-
 httpServer.listen(Number(PORT), '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`API Ready at http://localhost:${PORT}`);
 });
-
-

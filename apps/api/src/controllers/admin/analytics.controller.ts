@@ -211,7 +211,7 @@ export const getTopItems = async (req: Request, res: Response) => {
         // Get all non-cancelled orders with items
         const orders = await prisma.order.findMany({
             where: { status: { not: 'CANCELLED' } },
-            include: { Item: true },
+            include: { OrderItem: true },
             take: 200 // Last 200 orders for better data
         });
 
@@ -219,7 +219,7 @@ export const getTopItems = async (req: Request, res: Response) => {
 
         // Count quantities sold per item
         orders.forEach(order => {
-            order.items.forEach(item => {
+            order.OrderItem.forEach(item => {
                 if (!itemCounts[item.itemId]) {
                     itemCounts[item.itemId] = 0;
                 }

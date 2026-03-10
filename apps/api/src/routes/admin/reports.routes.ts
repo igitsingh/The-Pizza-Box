@@ -8,7 +8,11 @@ import {
     getOverviewReport
 } from '../../controllers/admin/reports.controller';
 
+import { authenticate, authorizeAdmin } from '../../middlewares/auth.middleware';
+
 const router = Router();
+
+router.use(authenticate, authorizeAdmin);
 
 router.get('/overview', getOverviewReport);
 router.get('/sales', getSalesReport);

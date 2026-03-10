@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { randomUUID } from 'crypto';
 import prisma from '../config/db';
 import { z } from 'zod';
 
@@ -24,6 +25,7 @@ export const addAddress = async (req: Request, res: Response): Promise<void> => 
 
         const address = await prisma.address.create({
             data: {
+                id: randomUUID(),
                 userId,
                 street,
                 city,

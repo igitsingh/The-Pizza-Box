@@ -218,6 +218,14 @@ export default function CheckoutPage() {
                                 })),
                                 total: finalTotal,
                                 addressId: selectedAddressId,
+                                // GUEST IDENTITY FIELDS (Mandatory for non-logged in)
+                                customerName: !user ? guestDetails.name : undefined,
+                                customerPhone: !user ? guestDetails.phone : undefined,
+                                guestAddress: !user ? {
+                                    street: guestDetails.street,
+                                    city: guestDetails.city,
+                                    zip: guestDetails.zip
+                                } : undefined,
                                 paymentMethod, // 'CARD', 'UPI', etc.
                                 paymentStatus: 'PAID', // Backend will verify proof
                                 paymentDetails: {
@@ -280,6 +288,14 @@ export default function CheckoutPage() {
                 })),
                 total: finalTotal,
                 addressId: selectedAddressId,
+                // GUEST IDENTITY FIELDS
+                customerName: !user ? guestDetails.name : undefined,
+                customerPhone: !user ? guestDetails.phone : undefined,
+                guestAddress: !user ? {
+                    street: guestDetails.street,
+                    city: guestDetails.city,
+                    zip: guestDetails.zip
+                } : undefined,
                 paymentMethod,
                 paymentStatus: 'PENDING',
                 paymentDetails,

@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import { createCategory, updateCategory, deleteCategory, getAllCategories } from '../../controllers/admin/category.controller';
-import { authenticateToken } from '../../middlewares/auth.middleware';
+import { authenticateToken, authorizeAdmin } from '../../middlewares/auth.middleware';
 
 const router = Router();
 
-router.use(authenticateToken);
+router.use(authenticateToken, authorizeAdmin);
 
 router.get('/', getAllCategories);
 router.post('/', createCategory);

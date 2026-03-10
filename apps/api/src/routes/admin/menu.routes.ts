@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import { createItem, updateItem, deleteItem, getAllItems } from '../../controllers/admin/menu.controller';
-import { authenticateToken } from '../../middlewares/auth.middleware';
+import { authenticateToken, authorizeAdmin } from '../../middlewares/auth.middleware';
 
 const router = Router();
 
-router.use(authenticateToken);
+router.use(authenticateToken, authorizeAdmin);
 
 router.get('/', getAllItems);
 router.post('/', createItem);

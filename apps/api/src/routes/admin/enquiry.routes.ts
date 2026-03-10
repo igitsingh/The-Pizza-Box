@@ -9,7 +9,11 @@ import {
     getEnquiryStats
 } from '../../controllers/admin/enquiry.controller';
 
+import { authenticate, authorizeAdmin } from '../../middlewares/auth.middleware';
+
 const router = Router();
+
+router.use(authenticate, authorizeAdmin);
 
 router.get('/stats', getEnquiryStats);
 router.get('/', getAllEnquiries);

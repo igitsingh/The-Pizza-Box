@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { randomUUID } from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -9,6 +10,7 @@ export const createItem = async (req: Request, res: Response) => {
 
         const item = await (prisma as any).item.create({
             data: {
+                id: randomUUID(),
                 name,
                 description,
                 price: parseFloat(price),
@@ -21,6 +23,7 @@ export const createItem = async (req: Request, res: Response) => {
                 isStockManaged: isStockManaged || false,
                 variants: variants ? {
                     create: variants.map((v: any) => ({
+                        id: randomUUID(),
                         type: v.type,
                         label: v.label,
                         price: parseFloat(v.price),

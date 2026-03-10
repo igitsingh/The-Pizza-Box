@@ -7,116 +7,65 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id         String      @id @default(uuid())
+  email      String?     @unique
+  password   String?
+  name       String
+  role       Role        @default(CUSTOMER)
+  phone      String?     @unique
+  otp        String?
+  otpExpiry  DateTime?
+  notes      String?
+  isVIP      Boolean     @default(false)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  
+  // Referral System
+  referralCode      String?   @unique
+  referredBy        String?
+  referralReward    Float     @default(0)
+  totalReferrals    Int       @default(0)
+  
+  // Membership System
+  membershipTier    MembershipTier @default(BRONZE)
+  membershipPoints  Int       @default(0)
+  lifetimeSpending  Float     @default(0)
+  
+  Address  Address[]
+  Complaint Complaint[]
+  Order     Order[]
+  Feedback  Feedback[]
+  Enquiry   Enquiry[]
+  referrer   User?     @relation("Referrals", fields: [referredBy], references: [id])
+  referrals  User[]    @relation("Referrals")
+  referrerTransactions ReferralTransaction[] @relation("ReferrerTransactions")
+  refereeTransactions  ReferralTransaction[] @relation("RefereeTransactions")
+}
+
 model Address {
-  id        String  @id
+  id        String  @id @default(uuid())
   userId    String
   street    String
   city      String
   zip       String
   isDefault Boolean @default(false)
-  User      User    @relation(fields: [userId], references: [id])
-  Order     Order[]
-}
-
-model Branch {
-  id        String   @id
-  name      String
-  address   String
-  phone     String
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime
+  user      User    @relation(fields: [userId], references: [id])
+  orders    Order[]
 }
 
 model Category {
-  id             String  @id
+  id             String  @id @default(uuid())
   name           String
   slug           String? @unique
   image          String?
   seoTitle       String?
   seoDescription String?
-  Item           Item[]
-}
-
-model Complaint {
-  id        String          @id
-  userId    String
-  subject   String
-  message   String
-  status    ComplaintStatus @default(OPEN)
-  createdAt DateTime        @default(now())
-  updatedAt DateTime
-  User      User            @relation(fields: [userId], references: [id])
-}
-
-model Coupon {
-  id        String       @id
-  code      String       @unique
-  type      DiscountType
-  value     Float
-  expiry    DateTime
-  isActive  Boolean      @default(true)
-  limit     Int?
-  usedCount Int          @default(0)
-  createdAt DateTime     @default(now())
-  updatedAt DateTime
-}
-
-model DeliveryPartner {
-  id              String   @id
-  name            String
-  phone           String   @unique
-  email           String?
-  vehicleType     String?
-  vehicleNumber   String?
-  currentLocation String?
-  status          String   @default("AVAILABLE")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime
-  Order           Order[]
-}
-
-model DeliveryZone {
-  id        String   @id
-  name      String
-  pincode   String   @unique
-  charge    Float
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime
-}
-
-model Enquiry {
-  id         String        @id
-  name       String
-  email      String?
-  phone      String
-  message    String
-  source     EnquirySource @default(CONTACT_FORM)
-  status     EnquiryStatus @default(NEW)
-  assignedTo String?
-  notes      String?
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime
-  User       User?         @relation(fields: [assignedTo], references: [id])
-}
-
-model Feedback {
-  id            String   @id
-  orderId       String   @unique
-  userId        String?
-  guestPhone    String?
-  rating        Int
-  review        String?
-  adminResponse String?
-  isVisible     Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  Order         Order    @relation(fields: [orderId], references: [id])
-  User          User?    @relation(fields: [userId], references: [id])
+  items          Item[]
 }
 
 model Item {
-  id             String       @id
+  id             String       @id @default(uuid())
   categoryId     String
   name           String
   description    String?
@@ -133,101 +82,98 @@ model Item {
   stock          Int          @default(100)
   isStockManaged Boolean      @default(false)
   createdAt      DateTime     @default(now())
-  updatedAt      DateTime
-  Category       Category     @relation(fields: [categoryId], references: [id])
-  ItemAddon      ItemAddon[]
-  ItemOption     ItemOption[]
-  Variant        Variant[]
+  updatedAt      DateTime     @updatedAt
+  variants       Variant[]
+  category       Category     @relation(fields: [categoryId], references: [id])
+  addons         ItemAddon[]
+  options        ItemOption[]
 }
 
-model ItemAddon {
-  id     String @id
-  itemId String
-  name   String
-  price  Float
-  Item   Item   @relation(fields: [itemId], references: [id])
-}
-
-model ItemOption {
-  id           String         @id
-  itemId       String
-  name         String
-  Item         Item           @relation(fields: [itemId], references: [id])
-  OptionChoice OptionChoice[]
+model Variant {
+  id          String   @id @default(uuid())
+  itemId      String
+  type        String   // 'SIZE', 'CRUST'
+  label       String   // 'Regular', 'Large', 'Thin Crust'
+  price       Float
+  isAvailable Boolean  @default(true)
+  item        Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
 }
 
 model Location {
-  id             String   @id
+  id             String   @id @default(uuid())
   name           String
   slug           String   @unique
   seoTitle       String?
   seoDescription String?
   content        String?
   createdAt      DateTime @default(now())
-  updatedAt      DateTime
+  updatedAt      DateTime @updatedAt
 }
 
-model NotificationLog {
-  id        String              @id
-  orderId   String
-  channel   NotificationChannel
-  event     NotificationEvent
-  status    NotificationStatus
-  message   String
-  metadata  Json?
-  error     String?
-  createdAt DateTime            @default(now())
-  Order     Order               @relation(fields: [orderId], references: [id])
+model ItemOption {
+  id      String         @id @default(uuid())
+  itemId  String
+  name    String
+  item    Item           @relation(fields: [itemId], references: [id])
+  choices OptionChoice[]
 }
 
 model OptionChoice {
-  id         String     @id
-  optionId   String
-  name       String
-  price      Float      @default(0)
-  ItemOption ItemOption @relation(fields: [optionId], references: [id])
+  id       String     @id @default(uuid())
+  optionId String
+  name     String
+  price    Float      @default(0)
+  option   ItemOption @relation(fields: [optionId], references: [id])
+}
+
+model ItemAddon {
+  id     String @id @default(uuid())
+  itemId String
+  name   String
+  price  Float
+  item   Item   @relation(fields: [itemId], references: [id])
 }
 
 model Order {
-  id                  String            @id
-  orderNumber         Int               @unique @default(autoincrement())
-  userId              String?
-  customerName        String?
-  customerPhone       String?
-  status              OrderStatus       @default(PENDING)
-  total               Float
-  subtotal            Float             @default(0)
-  tax                 Float             @default(0)
-  deliveryFee         Float             @default(0)
-  paymentMethod       PaymentMethod     @default(COD)
-  paymentStatus       PaymentStatus     @default(PENDING)
-  paymentDetails      Json?
-  instructions        String?
-  deliveryPartnerId   String?
-  addressId           String?
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime
-  guestAddress        Json?
-  isRepeated          Boolean           @default(false)
+  id                String           @id @default(uuid())
+  orderNumber       Int              @unique @default(autoincrement())
+  userId            String?          // Nullable for Guest orders
+  customerName      String?          // For Guest orders
+  customerPhone     String?          // For Guest orders
+  status            OrderStatus      @default(PENDING)
+  total             Float
+  subtotal          Float            @default(0)
+  tax               Float            @default(0)
+  deliveryFee       Float            @default(0)
+  paymentMethod     PaymentMethod    @default(COD)
+  paymentStatus     PaymentStatus    @default(PENDING)
+  paymentDetails    Json?
+  instructions      String?
+  deliveryPartnerId String?
+  addressId         String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  address           Address?         @relation(fields: [addressId], references: [id])
+  deliveryPartner   DeliveryPartner? @relation(fields: [deliveryPartnerId], references: [id])
+  user              User?            @relation(fields: [userId], references: [id])
+  OrderItem          OrderItem[]
+  Refund             Refund?
+  guestAddress       Json?            // For Guest orders: { street, city, zip }
+  isRepeated         Boolean          @default(false)
   repeatedFromOrderId String?
-  scheduledFor        DateTime?
-  orderType           OrderType         @default(INSTANT)
-  taxBreakup          Json?
-  invoiceNumber       String?           @unique
-  invoiceGeneratedAt  DateTime?
-  couponCode          String?
-  discountAmount      Float             @default(0)
-  Feedback            Feedback?
-  NotificationLog     NotificationLog[]
-  Address             Address?          @relation(fields: [addressId], references: [id])
-  DeliveryPartner     DeliveryPartner?  @relation(fields: [deliveryPartnerId], references: [id])
-  User                User?             @relation(fields: [userId], references: [id])
-  OrderItem           OrderItem[]
-  Refund              Refund?
+  scheduledFor       DateTime?
+  orderType          OrderType        @default(INSTANT)
+  NotificationLog    NotificationLog[]
+  taxBreakup         Json?
+  invoiceNumber      String?          @unique
+  invoiceGeneratedAt DateTime?
+  couponCode         String?
+  discountAmount     Float            @default(0)
+  Feedback           Feedback?
 }
 
 model OrderItem {
-  id       String @id
+  id       String @id @default(uuid())
   orderId  String
   itemId   String
   name     String
@@ -235,56 +181,26 @@ model OrderItem {
   quantity Int
   options  Json?
   addons   Json?
-  variants Json?
+  variants Json? // To store selected variants: [{type: 'SIZE', label: 'Medium', price: 100}]
   Order    Order  @relation(fields: [orderId], references: [id])
 }
 
-model ReferralTransaction {
-  id                                        String         @id
-  referrerId                                String
-  refereeId                                 String
-  rewardAmount                              Float
-  orderValue                                Float
-  status                                    ReferralStatus @default(PENDING)
-  createdAt                                 DateTime       @default(now())
-  User_ReferralTransaction_refereeIdToUser  User           @relation("ReferralTransaction_refereeIdToUser", fields: [refereeId], references: [id])
-  User_ReferralTransaction_referrerIdToUser User           @relation("ReferralTransaction_referrerIdToUser", fields: [referrerId], references: [id])
-}
-
-model Refund {
-  id        String   @id
-  orderId   String   @unique
-  amount    Float
-  reason    String?
-  status    String
-  createdAt DateTime @default(now())
-  Order     Order    @relation(fields: [orderId], references: [id])
-}
-
-model Settings {
-  id                   String   @id
-  restaurantName       String
-  contactPhone         String
-  contactEmail         String
-  address              String
-  minOrderAmount       Float    @default(0)
-  operatingHours       String
-  isOpen               Boolean  @default(true)
-  isPaused             Boolean  @default(false)
-  notificationsEnabled Boolean  @default(true)
-  whatsappEnabled      Boolean  @default(false)
-  smsEnabled           Boolean  @default(false)
-  emailEnabled         Boolean  @default(false)
-  closedMessage        String?
-  seoTitle             String?
-  seoDescription       String?
-  seoOgImage           String?
-  updatedAt            DateTime
-  lastOrderTime        String?
+model DeliveryPartner {
+  id              String   @id @default(uuid())
+  name            String
+  phone           String   @unique
+  email           String?
+  vehicleType     String?
+  vehicleNumber   String?
+  currentLocation String?
+  status          String   @default("AVAILABLE")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  orders          Order[]
 }
 
 model Transaction {
-  id        String   @id
+  id        String   @id @default(uuid())
   orderId   String?
   amount    Float
   type      String
@@ -294,104 +210,89 @@ model Transaction {
   createdAt DateTime @default(now())
 }
 
-model User {
-  id                                                       String                @id
-  email                                                    String?               @unique
-  password                                                 String?
-  name                                                     String
-  role                                                     Role                  @default(CUSTOMER)
-  phone                                                    String?               @unique
-  otp                                                      String?
-  otpExpiry                                                DateTime?
-  notes                                                    String?
-  isVIP                                                    Boolean               @default(false)
-  createdAt                                                DateTime              @default(now())
-  updatedAt                                                DateTime
-  referralCode                                             String?               @unique
-  referredBy                                               String?
-  referralReward                                           Float                 @default(0)
-  totalReferrals                                           Int                   @default(0)
-  membershipTier                                           MembershipTier        @default(BRONZE)
-  membershipPoints                                         Int                   @default(0)
-  lifetimeSpending                                         Float                 @default(0)
-  Address                                                  Address[]
-  Complaint                                                Complaint[]
-  Enquiry                                                  Enquiry[]
-  Feedback                                                 Feedback[]
-  Order                                                    Order[]
-  ReferralTransaction_ReferralTransaction_refereeIdToUser  ReferralTransaction[] @relation("ReferralTransaction_refereeIdToUser")
-  ReferralTransaction_ReferralTransaction_referrerIdToUser ReferralTransaction[] @relation("ReferralTransaction_referrerIdToUser")
-  User                                                     User?                 @relation("UserToUser", fields: [referredBy], references: [id])
-  other_User                                               User[]                @relation("UserToUser")
+model Refund {
+  id        String   @id @default(uuid())
+  orderId   String   @unique
+  amount    Float
+  reason    String?
+  status    String
+  createdAt DateTime @default(now())
+  order     Order    @relation(fields: [orderId], references: [id])
 }
 
-model Variant {
-  id          String  @id
-  itemId      String
-  type        String
-  label       String
-  price       Float
-  isAvailable Boolean @default(true)
-  Item        Item    @relation(fields: [itemId], references: [id], onDelete: Cascade)
+model Complaint {
+  id        String          @id @default(uuid())
+  userId    String
+  subject   String
+  message   String
+  status    ComplaintStatus @default(OPEN)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  user      User            @relation(fields: [userId], references: [id])
 }
 
-enum ComplaintStatus {
-  OPEN
-  IN_PROGRESS
-  RESOLVED
+model Coupon {
+  id        String       @id @default(uuid())
+  code      String       @unique
+  type      DiscountType
+  value     Float
+  expiry    DateTime
+  isActive  Boolean      @default(true)
+  limit     Int?
+  usedCount Int          @default(0)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 }
 
-enum DiscountType {
-  FLAT
-  PERCENTAGE
+model DeliveryZone {
+  id        String   @id @default(uuid())
+  name      String
+  pincode   String   @unique
+  charge    Float
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-enum EnquirySource {
-  CONTACT_FORM
-  WHATSAPP
-  CALL_BACK
-  CHAT
-  PHONE
-  EMAIL
+model Settings {
+  id             String   @id @default(uuid())
+  restaurantName String
+  contactPhone   String
+  contactEmail   String
+  address        String
+  minOrderAmount Float    @default(0)
+  operatingHours String
+  isOpen         Boolean  @default(true)
+  isPaused       Boolean  @default(false)
+  notificationsEnabled Boolean @default(true)
+  whatsappEnabled      Boolean @default(false)
+  smsEnabled           Boolean @default(false)
+  emailEnabled         Boolean @default(false)
+  closedMessage        String?
+  lastOrderTime        String?  // HH:mm format for auto-cutoff
+  seoTitle       String?
+  seoDescription String?
+  seoOgImage     String?
+  updatedAt      DateTime @updatedAt
 }
 
-enum EnquiryStatus {
-  NEW
-  IN_PROGRESS
-  CONTACTED
-  CONVERTED
-  CLOSED
-  SPAM
+model Branch {
+  id        String   @id @default(uuid())
+  name      String
+  address   String
+  phone     String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-enum MembershipTier {
-  BRONZE
-  SILVER
-  GOLD
-  PLATINUM
-}
-
-enum NotificationChannel {
-  LOG
-  SMS
-  WHATSAPP
-  EMAIL
-}
-
-enum NotificationEvent {
-  ORDER_PLACED
-  ORDER_ACCEPTED
-  ORDER_PREPARING
-  OUT_FOR_DELIVERY
-  DELIVERED
-  SCHEDULED_ORDER_CONFIRMED
-}
-
-enum NotificationStatus {
-  QUEUED
-  SENT
-  FAILED
-  SKIPPED
+enum Role {
+  CUSTOMER
+  ADMIN
+  MANAGER
+  CHEF
+  DELIVERY_PARTNER
+  ACCOUNTANT
 }
 
 enum OrderStatus {
@@ -426,17 +327,127 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum ComplaintStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+}
+
+enum NotificationStatus {
+  QUEUED
+  SENT
+  FAILED
+  SKIPPED
+}
+
+enum NotificationChannel {
+  LOG
+  SMS
+  WHATSAPP
+  EMAIL
+}
+
+enum NotificationEvent {
+  ORDER_PLACED
+  ORDER_ACCEPTED
+  ORDER_PREPARING
+  OUT_FOR_DELIVERY
+  DELIVERED
+  SCHEDULED_ORDER_CONFIRMED
+}
+
+model NotificationLog {
+  id        String             @id @default(uuid())
+  orderId   String
+  channel   NotificationChannel
+  event     NotificationEvent
+  status    NotificationStatus
+  message   String
+  metadata  Json?
+  error     String?
+  createdAt DateTime           @default(now())
+
+  order     Order              @relation(fields: [orderId], references: [id])
+}
+
+enum DiscountType {
+  FLAT
+  PERCENTAGE
+}
+
+model Feedback {
+  id            String   @id @default(uuid())
+  orderId       String
+  userId        String?
+  guestPhone    String?
+  rating        Int      // 1-5 only
+  review        String?
+  adminResponse String?
+  isVisible     Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  order         Order    @relation(fields: [orderId], references: [id])
+  user          User?    @relation(fields: [userId], references: [id])
+
+  @@unique([orderId]) // One feedback per order
+}
+
+model Enquiry {
+  id          String        @id @default(uuid())
+  name        String
+  email       String?
+  phone       String
+  message     String
+  source      EnquirySource @default(CONTACT_FORM)
+  status      EnquiryStatus @default(NEW)
+  assignedTo  String?
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  assignedUser User?        @relation(fields: [assignedTo], references: [id])
+}
+
+enum EnquirySource {
+  CONTACT_FORM
+  WHATSAPP
+  CALL_BACK
+  CHAT
+  PHONE
+  EMAIL
+}
+
+enum EnquiryStatus {
+  NEW
+  IN_PROGRESS
+  CONTACTED
+  CONVERTED
+  CLOSED
+  SPAM
+}
+
+model ReferralTransaction {
+  id            String   @id @default(uuid())
+  referrerId    String
+  refereeId     String
+  rewardAmount  Float
+  orderValue    Float
+  status        ReferralStatus @default(PENDING)
+  createdAt     DateTime @default(now())
+  
+  referrer      User     @relation("ReferrerTransactions", fields: [referrerId], references: [id])
+  referee       User     @relation("RefereeTransactions", fields: [refereeId], references: [id])
+}
+
+enum MembershipTier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
 enum ReferralStatus {
   PENDING
   COMPLETED
   CANCELLED
-}
-
-enum Role {
-  CUSTOMER
-  ADMIN
-  MANAGER
-  CHEF
-  DELIVERY_PARTNER
-  ACCOUNTANT
 }

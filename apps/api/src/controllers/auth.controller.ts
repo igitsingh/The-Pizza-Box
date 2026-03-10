@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { randomUUID } from 'crypto';
 import prisma from '../config/db';
 import { generateToken, hashPassword, comparePassword } from '../utils/auth';
 import { transformAuthResponse } from '../utils/transform';
@@ -37,6 +38,7 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
         const hashedPassword = await hashPassword(password);
         const user = await prisma.user.create({
             data: {
+                id: randomUUID(),
                 email,
                 password: hashedPassword,
                 name,
@@ -133,6 +135,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
             // Create new user
             user = await prisma.user.create({
                 data: {
+                    id: randomUUID(),
                     email,
                     name: name || 'Google User',
                     password: await hashPassword(Math.random().toString(36).slice(-8)), // Random password
@@ -165,6 +168,7 @@ export const whatsappLogin = async (req: Request, res: Response): Promise<void> 
             // Create new user
             user = await prisma.user.create({
                 data: {
+                    id: randomUUID(),
                     email: `${phone}@whatsapp.com`, // Placeholder email
                     phone,
                     name: name || 'WhatsApp User',
@@ -221,6 +225,7 @@ export const sendOTP = async (req: Request, res: Response): Promise<void> => {
             // To keep it simple, let's create the user with a placeholder name.
             user = await (prisma.user as any).create({
                 data: {
+                    id: randomUUID(),
                     phone,
                     name: 'Guest User',
                     otp,

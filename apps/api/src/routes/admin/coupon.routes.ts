@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import { createCoupon, updateCoupon, deleteCoupon, getAllCoupons } from '../../controllers/admin/coupon.controller';
-import { authenticateToken } from '../../middlewares/auth.middleware';
+import { authenticateToken, authorizeAdmin } from '../../middlewares/auth.middleware';
 
 const router = Router();
 
-router.use(authenticateToken);
+router.use(authenticateToken, authorizeAdmin);
 
 router.get('/', getAllCoupons);
 router.post('/', createCoupon);
