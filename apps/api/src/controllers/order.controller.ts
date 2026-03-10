@@ -465,17 +465,17 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
         if (orderType === 'SCHEDULED' && finalScheduledDate) {
             notificationService.notify(NotificationEvent.SCHEDULED_ORDER_CONFIRMED, {
                 orderId: order.id,
-                customerName: customerName || userId || 'Guest',
-                amount: total,
-                phone: customerPhone,
+                customerName: finalCustomerName || userId || 'Guest',
+                amount: finalTotal,
+                phone: finalCustomerPhone,
                 scheduledFor: finalScheduledDate.toISOString()
             });
         } else {
             notificationService.notify(NotificationEvent.ORDER_PLACED, {
                 orderId: order.id,
-                customerName: customerName || userId || 'Guest',
-                amount: total,
-                phone: customerPhone
+                customerName: finalCustomerName || userId || 'Guest',
+                amount: finalTotal,
+                phone: finalCustomerPhone
             });
         }
 

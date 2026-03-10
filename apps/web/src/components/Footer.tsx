@@ -54,12 +54,6 @@ const Footer = () => {
                 </div>
                 <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500">
                     <p>© {new Date().getFullYear()} {name}. All rights reserved.</p>
-
-                    <div className="mt-6 flex flex-col items-center gap-1">
-                        <p className="text-xs font-bold tracking-widest uppercase text-gray-600">
-                            <span style={{ color: '#f20707' }}>HOUSE OF FLOYDS</span> CREATION
-                        </p>
-                    </div>
                 </div>
             </div>
         </footer>
