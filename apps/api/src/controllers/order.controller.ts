@@ -88,6 +88,7 @@ export const validateDelivery = async (req: Request, res: Response): Promise<voi
 
 export const createOrder = async (req: Request, res: Response): Promise<void> => {
     try {
+        console.log('[Order] Request Body:', JSON.stringify(req.body, null, 2));
         // @ts-ignore
         const userId = req.user?.userId;
         const { items, total, addressId, paymentMethod, paymentDetails, scheduledFor, orderType, couponCode, guestAddress } = createOrderSchema.parse(req.body);
@@ -482,7 +483,11 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
         res.status(201).json(transformOrder(order));
     } catch (error) {
         if (error instanceof z.ZodError) {
-            res.status(400).json({ errors: error.issues });
+            console.error('[Order] Validation Error:', error.issues);
+            res.status(400).json({ 
+                message: 'Invalid order data: ' + error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', '),
+                errors: error.issues 
+            });
         } else {
             // @ts-ignore
             if (error.message && error.message.includes('out of stock')) {
