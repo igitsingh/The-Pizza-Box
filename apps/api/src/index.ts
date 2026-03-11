@@ -9,8 +9,34 @@ import { createServer } from 'http';
 dotenv.config();
 
 import { initSocket } from './socket';
+import { rateLimit } from 'express-rate-limit';
 
 const app = express();
+
+// --- RATE LIMITERS ---
+const generalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    limit: 100, // Limit each IP to 100 requests per windowMs
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: { message: 'Too many requests from this IP, please try again after 15 minutes' }
+});
+
+const authLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 10, // Limit each IP to 10 login attempts per hour
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: { message: 'Too many login attempts, please try again after an hour' }
+});
+
+const otpLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 5, // Limit each IP to 5 OTP requests per hour
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: { message: 'Too many OTP requests, please try again after an hour' }
+});
 const httpServer = createServer(app);
 const io = initSocket(httpServer);
 
@@ -64,17 +90,34 @@ app.use(express.json({
     }
 }));
 app.use(cookieParser());
+const allowedOrigins = [
+    'https://the-pizza-box-web.vercel.app',
+    'https://the-pizza-box-admin.vercel.app',
+    'http://localhost:3000', // Web Dev
+    'http://localhost:3001', // Admin Dev
+    'http://localhost:8081', // Mobile Bundler
+];
+
 app.use(cors({
-    origin: true,
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
 }));
 app.use(helmet());
 app.use(morgan('dev'));
 
 // --- API ROUTES ---
+app.use('/api', generalLimiter);
 
 // Auth & Core
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/users', userRoutes);
 
 // Customer Facing
@@ -89,10 +132,10 @@ app.use('/api/enquiry', enquiryRoutes);
 app.use('/api/referral', referralRoutes);
 app.use('/api/membership', membershipRoutes);
 app.use('/api/complaints', complaintRoutes);
-app.use('/api/otp', otpRoutes);
+app.use('/api/otp', otpLimiter, otpRoutes);
 
 // Admin Modular (Secured)
-app.use('/api/admin/auth', adminAuthRoutes);
+app.use('/api/admin/auth', authLimiter, adminAuthRoutes);
 app.use('/api/admin/menu', adminMenuRoutes);
 app.use('/api/admin/categories', adminCategoryRoutes);
 app.use('/api/admin/orders', adminOrderRoutes);
