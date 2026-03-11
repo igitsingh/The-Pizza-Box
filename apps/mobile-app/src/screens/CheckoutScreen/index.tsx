@@ -85,7 +85,7 @@ const CheckoutScreen = ({ navigation }: any) => {
         addressId: selectedAddress,
         paymentMethod: paymentMethod,
         total: cartTotal,
-        couponCode: couponCode,
+        couponCode: couponCode || undefined,
         items: cart.map(item => ({
           itemId: item.id,
           quantity: item.quantity,
