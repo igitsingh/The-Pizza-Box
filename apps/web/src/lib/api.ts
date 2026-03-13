@@ -18,7 +18,25 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
     (response) => response,
-    (error) => {
+    async (error) => {
+        const { config, response } = error;
+
+        // Add retry logic for cold starts (5xx errors or network errors)
+        // Only retry GET requests to avoid side effects on POST/PUT
+        if (config && config.method === 'get' && (!response || response.status >= 500)) {
+            config._retryCount = config._retryCount || 0;
+
+            if (config._retryCount < 3) {
+                config._retryCount += 1;
+                // Exponential backoff: 2s, 4s, 8s
+                const backoff = Math.pow(2, config._retryCount) * 1000;
+                console.log(`📡 API Cold Start detected (Web). Retrying in ${backoff}ms... (Attempt ${config._retryCount})`);
+
+                await new Promise(resolve => setTimeout(resolve, backoff));
+                return api(config);
+            }
+        }
+
         if (error.response?.status === 401) {
             localStorage.removeItem('token');
             // Clear user from Zustand store as well

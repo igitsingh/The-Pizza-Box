@@ -158,9 +158,21 @@ app.use('/api/admin/locations', adminLocationRoutes);
 // Legacy Admin Bridge
 app.use('/api/admin', adminRoutes);
 
-// Root
+// Root & Health
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString(), service: 'pizza-box-api' });
+});
+
 app.get('/', (req, res) => {
-    res.json({ message: 'Welcome to The Pizza Box API' });
+    res.json({ 
+        message: 'Welcome to The Pizza Box API',
+        version: '1.0.0',
+        environment: process.env.NODE_ENV || 'development'
+    });
 });
 
 // --- SOCKETS ---

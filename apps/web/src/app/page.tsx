@@ -25,6 +25,14 @@ export default function Home() {
   const [loveCarouselSlide, setLoveCarouselSlide] = useState(0);
   const [bestsellers, setBestsellers] = useState<any[]>([]);
   const [loadingBestsellers, setLoadingBestsellers] = useState(true);
+  const [isSlowLoading, setIsSlowLoading] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (loadingBestsellers) setIsSlowLoading(true);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [loadingBestsellers]);
   const { location: selectedLocation, setLocation: setSelectedLocation, user, cart, addToCart, removeFromCart } = useStore();
   const [couponCode, setCouponCode] = useState('NY2026');
 
@@ -229,8 +237,14 @@ export default function Home() {
 
           <div className="grid grid-cols-3 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-6">
             {loadingBestsellers ? (
-              <div className="col-span-full flex justify-center items-center py-20">
-                <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+              <div className="col-span-full flex flex-col justify-center items-center py-20 gap-4">
+                <Loader2 className="h-10 w-10 animate-spin text-orange-600" />
+                {isSlowLoading && (
+                  <div className="text-center animate-in fade-in slide-in-from-bottom-2 duration-1000">
+                    <p className="text-gray-600 font-bold">Waking up our server... 🍕</p>
+                    <p className="text-gray-400 text-xs mt-1">Starting the oven, please wait 30-50 secs.</p>
+                  </div>
+                )}
               </div>
             ) : bestsellers.length === 0 ? (
               <div className="col-span-full text-center py-20">

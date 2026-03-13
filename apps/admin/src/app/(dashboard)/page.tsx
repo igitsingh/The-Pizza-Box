@@ -28,7 +28,15 @@ export default function DashboardPage() {
     const [salesTrend, setSalesTrend] = useState([]);
     const [topItems, setTopItems] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isSlowLoading, setIsSlowLoading] = useState(false);
     const [timeRange, setTimeRange] = useState('7d');
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (loading) setIsSlowLoading(true);
+        }, 3000);
+        return () => clearTimeout(timer);
+    }, [loading]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -56,7 +64,21 @@ export default function DashboardPage() {
     }, [timeRange]);
 
     if (loading) {
-        return <div className="flex items-center justify-center h-screen">Loading...</div>;
+        return (
+            <div className="flex flex-col items-center justify-center h-screen gap-4 bg-slate-50">
+                <div className="relative">
+                    <div className="h-12 w-12 rounded-full border-4 border-slate-200 border-t-orange-600 animate-spin"></div>
+                </div>
+                {isSlowLoading && (
+                    <div className="text-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                        <p className="text-slate-700 font-bold text-lg">Connecting to Command Center...</p>
+                        <p className="text-slate-500 text-sm max-w-xs mx-auto mt-2">
+                            The server is starting up (cold start). This usually takes 30-50 seconds.
+                        </p>
+                    </div>
+                )}
+            </div>
+        );
     }
 
     return (

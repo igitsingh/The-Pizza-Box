@@ -1,0 +1,18 @@
+name: Keep Backend Alive
+
+on:
+  schedule:
+    # Run every 10 minutes from 06:00 to 23:59 IST (approx 00:30 to 18:30 UTC)
+    # This covers business hours to keep it awake when customers are active.
+    # Or just run every 10 mins 24/7 if prefered:
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping API Health Endpoint
+        run: |
+          echo "Pinging API at $(date)"
+          curl -s https://the-pizza-box.onrender.com/health || echo "API Ping Failed"

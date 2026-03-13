@@ -50,7 +50,15 @@ export default function MenuPage() {
     const [activeCategory, setActiveCategory] = useState<string>('');
     const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
     const [isSortOpen, setIsSortOpen] = useState(false);
+    const [isSlowLoading, setIsSlowLoading] = useState(false);
     const addToCart = useStore((state) => state.addToCart);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (loading) setIsSlowLoading(true);
+        }, 3000);
+        return () => clearTimeout(timer);
+    }, [loading]);
 
     useEffect(() => {
         const fetchMenu = async () => {
@@ -109,8 +117,16 @@ export default function MenuPage() {
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center min-h-screen">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="flex flex-col justify-center items-center min-h-screen gap-4">
+                <Loader2 className="h-10 w-10 animate-spin text-orange-600" />
+                {isSlowLoading && (
+                    <div className="text-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                        <p className="text-gray-600 font-bold text-lg">Waking up our ovens... 🍕</p>
+                        <p className="text-gray-400 text-sm max-w-xs mx-auto mt-2">
+                            The server is starting up. This usually takes about 30-50 seconds. Thank you for your patience!
+                        </p>
+                    </div>
+                )}
             </div>
         );
     }
